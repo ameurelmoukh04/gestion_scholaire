@@ -1,0 +1,6 @@
+PROBLEME;Climatisation en panne dans la salle A102;10/10/2024
+PROBLEME;Eclairage defectueux dans le couloir du 2eme etage;12/10/2024
+REPARATION;Climatisation reparee dans la salle A102;13/10/2024
+PROBLEME;Fuite d'eau dans les toilettes du rez-de-chaussee;15/10/2024
+REPARATION;Eclairage repare dans le couloir du 2eme etage;16/10/2024
+

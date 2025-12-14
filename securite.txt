@@ -1,0 +1,5 @@
+Intrusion;Portail principal;Personne non autorisee tente d'entrer;05/10/2024
+Altercation;Cour de recreation;Dispute entre deux etudiants resolue rapidement;12/10/2024
+Objet suspect;Parking;Sac abandonne - verification effectuee - sans danger;18/10/2024
+Acces non autorise;Batiment B;Visiteur sans badge d'acces;25/10/2024
+

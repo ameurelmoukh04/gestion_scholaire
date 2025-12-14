@@ -1,0 +1,9 @@
+1;Introduction a l'Algebre;EMPRUNT
+1;Physique Generale;EMPRUNT
+2;Chimie Organique;EMPRUNT
+2;Grammaire Francaise;EMPRUNT
+3;Programmation en C++;EMPRUNT
+4;Histoire du Maroc;EMPRUNT
+1;Introduction a l'Algebre;RETOUR
+2;Grammaire Francaise;RETOUR
+

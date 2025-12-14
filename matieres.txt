@@ -1,0 +1,8 @@
+1;Mathematiques;4;Cours de mathematiques avancees incluant algebre, geometrie et analyse
+2;Physique;3;Cours de physique generale couvrant mecanique, thermodynamique et electromagnetisme
+3;Chimie;3;Cours de chimie generale et organique
+4;Francais;2;Cours de langue francaise et litterature
+5;Anglais;2;Cours de langue anglaise et communication
+6;Histoire-Geographie;2;Cours d'histoire et geographie du Maroc et du monde
+7;Sciences de la Vie et de la Terre;2;Cours de biologie et sciences naturelles
+8;Informatique;3;Cours de programmation et technologies de l'information

@@ -1,0 +1,6 @@
+1;Ahmed Benali;Mal de tete et fievre legere;08/10/2024
+2;Fatima Alaoui;Controle medical de routine;12/10/2024
+3;Youssef Idrissi;Blessure a la main lors d'activite sportive;18/10/2024
+1;Ahmed Benali;Suivi medical - fievre disparue;10/10/2024
+4;Aicha Tazi;Mal de ventre;22/10/2024
+
