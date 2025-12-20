@@ -1,17 +1,17 @@
-Etudiant;1;Ahmed;Benali;15/03/2005;ahmed.benali@school.ma;0612345678;123 Rue Hassan II, Casablanca;1;2;1
-Etudiant;2;Fatima;Alaoui;22/07/2005;fatima.alaoui@school.ma;0623456789;45 Avenue Mohammed V, Rabat;1;0;0
-Etudiant;3;Youssef;Idrissi;10/11/2004;youssef.idrissi@school.ma;0634567890;78 Boulevard Zerktouni, Casablanca;1;1;3
-Etudiant;4;Aicha;Tazi;05/01/2005;aicha.tazi@school.ma;0645678901;12 Rue de la Liberte, Fes;1;0;1
-Etudiant;5;Mehdi;Berrada;18/09/2004;mehdi.berrada@school.ma;0656789012;34 Avenue Allal Ben Abdellah, Rabat;1;3;0
-Enseignant;6;Dr. Hassan;Amrani;20/05/1975;hassan.amrani@school.ma;0667890123;56 Rue Ibn Battuta, Casablanca;1;0;0
-Enseignant;7;Prof. Khadija;Bennani;12/08/1980;khadija.bennani@school.ma;0678901234;89 Avenue Hassan II, Rabat;1;0;0
-Enseignant;8;Dr. Omar;Cherkaoui;03/12/1978;omar.cherkaoui@school.ma;0689012345;23 Rue Mohammed VI, Fes;1;0;0
-Caissiere;9;Samira;El Fassi;25/04/1985;samira.elfassi@school.ma;0690123456;67 Boulevard Zerktouni, Casablanca;1;0;0
-DirecteurPedagogique;10;Dr. Mohamed;Lahlou;15/06/1970;mohamed.lahlou@school.ma;0611234567;90 Avenue Mohammed V, Rabat;1;0;0
-Bibliothecaire;11;Latifa;Mekouar;08/02/1988;latifa.mekouar@school.ma;0622345678;11 Rue de la Republique, Casablanca;1;0;0
-SurveillantGeneral;12;Abdelkader;Bouazza;30/09/1972;abdelkader.bouazza@school.ma;0633456789;22 Avenue Hassan II, Rabat;1;0;0
-Infirmier;13;Nadia;Rachidi;14/07/1983;nadia.rachidi@school.ma;0644567890;33 Rue Ibn Sina, Casablanca;1;0;0
-AgentSecurite;14;Hamid;Touil;19/11/1976;hamid.touil@school.ma;0655678901;44 Boulevard Zerktouni, Casablanca;1;0;0
-Technicien;15;Karim;Bensaid;07/03/1981;karim.bensaid@school.ma;0666789012;55 Avenue Mohammed V, Rabat;1;0;0
-ResponsableSite;16;Larbi;El Ouazzani;22/05/1974;larbi.elouazzani@school.ma;0677890123;66 Rue Hassan II, Casablanca;1;0;0
-PersonnelMenage;Zone A;17;Fatima;Ait Ali;10/12/1987;fatima.aitali@school.ma;0688901234;77 Avenue Allal Ben Abdellah, Rabat;1;0;0
+Etudiant;1;Ahmed;Benali;15/03/2005;ahmed.benali@school.ma;1234;1;0;1;1;1
+Etudiant;2;Fatima;Alaoui;22/07/2005;fatima.alaoui@school.ma;1234;0;0;0;0;0
+Etudiant;3;Youssef;Idrissi;10/11/2004;youssef.idrissi@school.ma;1234;1;0;0;3;3
+Etudiant;4;Aicha;Tazi;05/01/2005;aicha.tazi@school.ma;1234;0;1;1;1;1
+Etudiant;5;Mehdi;Berrada;18/09/2004;mehdi.berrada@school.ma;1234;0;0;0;0;0
+Enseignant;6;Dr. Hassan;Amrani;20/05/1975;hassan.amrani@school.ma;1234;0;0;0;0;0
+Enseignant;7;Prof. Khadija;Bennani;12/08/1980;khadija.bennani@school.ma;1234;0;0;0;0;0
+Enseignant;8;Dr. Omar;Cherkaoui;03/12/1978;omar.cherkaoui@school.ma;1234;0;0;0;0;0
+Caissiere;9;Samira;El Fassi;25/04/1985;samira.elfassi@school.ma;1234;0;0;0;0;0
+DirecteurPedagogique;10;Dr. Mohamed;Lahlou;15/06/1970;mohamed.lahlou@school.ma;1234;0;0;0;0;0
+Bibliothecaire;11;Latifa;Mekouar;08/02/1988;latifa.mekouar@school.ma;1234;0;0;0;0;0
+SurveillantGeneral;12;Abdelkader;Bouazza;30/09/1972;abdelkader.bouazza@school.ma;1234;0;0;0;0;0
+Infirmier;13;Nadia;Rachidi;14/07/1983;nadia.rachidi@school.ma;1234;0;0;0;0;0
+AgentSecurite;14;Hamid;Touil;19/11/1976;hamid.touil@school.ma;1234;0;0;0;0;0
+Technicien;15;Karim;Bensaid;07/03/1981;karim.bensaid@school.ma;1234;0;0;0;0;0
+ResponsableSite;16;Larbi;El Ouazzani;22/05/1974;larbi.elouazzani@school.ma;1234;0;0;0;0;0
+PersonnelMenage;Zone A;17;Fatima;Ait Ali;10/12/1987;fatima.aitali@school.ma;1234;0688901234;77 Avenue Allal Ben Abdellah, Rabat;1;0;0

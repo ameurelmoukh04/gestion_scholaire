@@ -22,6 +22,7 @@ protected:
     string dateNaissance;
     string sexe;
     string email;
+    string password;
     string telephone;
     string adresse;
     bool actif;
@@ -56,6 +57,7 @@ public:
     string getNom() const { return nom; }
     string getNomComplet() const { return prenom + " " + nom; }
     string getEmail() const { return email; }
+    string getPassword() const { return password; }
     string getDateNaissance() const { return dateNaissance; }
     string getTelephone() const { return telephone; }
     string getAdresse() const { return adresse; }
@@ -108,6 +110,7 @@ public:
         getline(ss, nom, ';');
         getline(ss, dateNaissance, ';');
         getline(ss, email, ';');
+        getline(ss, password, ';');
         getline(ss, telephone, ';');
         getline(ss, adresse, ';');
         getline(ss, item, ';'); actif = (item == "1");
@@ -539,6 +542,19 @@ public:
         for (auto* p : personnes)
             if (p->getId() == id) return p;
         return nullptr;
+    }
+
+    static Personne* login(int id, string password){
+        for (auto* p : personnes) {
+            if (p->getId() == id) {
+                if (p->getPassword() == password) {
+                    return p;
+                } else {
+                    throw runtime_error("Mot de Pass est Incorrect");
+                }
+            }
+        }
+        throw runtime_error("Person non trouve");
     }
 
     static Matiere* trouverMatiere(int id) {
@@ -1014,13 +1030,13 @@ public:
         cout << "Retard enregistre pour " << p.getNomComplet() << endl;
     }
 
-    void consulterDiscipline() {
-        ifstream f("discipline.txt");
+    void consulterabsence() {
+        ifstream f("absence.txt");
         if (!f.is_open()) {
             cout << "Aucun enregistrement.\n";
             return;
         }
-        cout << "\n--- ENREGISTREMENTS DISCIPLINE ---\n";
+        cout << "\n--- ENREGISTREMENTS absence ---\n";
         string line;
         while (getline(f, line)) {
             if (line.empty()) continue;
@@ -1031,7 +1047,7 @@ public:
 
 private:
     void enregistrerAction(const string& type, int idPersonne) {
-        ofstream f("discipline.txt", ios::app);
+        ofstream f("absence.txt", ios::app);
         f << type << ";" << idPersonne << ";" << __DATE__ << "\n";
         f.close();
     }
@@ -1059,7 +1075,7 @@ public:
                     else enregistrerRetard(*p);
                 } else cout << "Personne non trouvee.\n";
             } else if (choix == 3) {
-                consulterDiscipline();
+                consulterabsence();
             }
         } while (choix != 4);
     }
@@ -1431,7 +1447,7 @@ int main() {
     // Initialize database files if they don't exist (create empty files)
     vector<string> dbFiles = {
         "personnes.txt", "matieres.txt", "notes.txt", "salles.txt",
-        "cours.txt", "paiements.txt", "bibliotheque.txt", "discipline.txt",
+        "cours.txt", "paiements.txt", "bibliotheque.txt", "absence.txt",
         "maintenance.txt", "infirmerie.txt", "securite.txt", "nettoyage.txt"
     };
     for (const auto& filename : dbFiles) {
@@ -1465,15 +1481,27 @@ int main() {
 
         if (choix == 1) {
             int id;
+            string password;
             cout << "Entrez votre ID : ";
             cin >> id;
-            currentUser = DataManager::trouverPersonne(id);
+            cin.ignore(); // Clear the input buffer
+            cout << "Entrez votre Mot de Passe : ";
+            getline(cin, password); // Use getline to handle passwords properly
+            currentUser = nullptr; // Reset currentUser before login attempt
+            try {
+                currentUser = DataManager::login(id, password);
+            } catch (const runtime_error& e) {
+                cout << e.what() << endl;
+                currentUser = nullptr; // Ensure currentUser is null on error
+            }
+
             if (currentUser) {
                 cout << "Bienvenue " << currentUser->getNomComplet() << "!\n";
                 currentUser->menu();
-            } else {
-                cout << "Personne non trouvee.\n";
             }
+            //  else {
+            //     cout << "Person non trouvee.\n";
+            // }
         } else if (choix == 2) {
             int type;
             cout << "Type de compte:\n";
@@ -1632,3 +1660,7 @@ int main() {
     
     return 0;
 }
+
+
+//compile in vs code by ameur
+// g++ -std=c++11 final.cpp -o final
