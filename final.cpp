@@ -5,8 +5,12 @@
 #include <sstream>
 #include <algorithm>
 #include <iomanip>
+#include <limits>
 
 using namespace std;
+int lireEntier();
+float lireFloat();
+bool verifierChoix(int choix, int min, int max);
 
 // Forward declarations
 class Etudiant;
@@ -598,14 +602,15 @@ public:
 
     string getType() const override { return "Etudiant"; }
 
-    void consulterMatieres() const {
-        cout << "\n--- MES MATIERES ---\n";
-        if (matieres.empty())
-            cout << "Aucune matiere.\n";
-        else
-            for (const auto& m : matieres)
-                m.afficher();
+   void consulterMatieres() const {
+    cout << "\n--- MES MATIERES ---\n";
+    if (DataManager::matieres.empty()) {
+        cout << "Aucune matiere.\n";
+    } else {
+        for (const auto& m : DataManager::matieres)
+            m.afficher();
     }
+}
 
     void consulterNotes() const {
         cout << "\n--- MES NOTES ---\n";
@@ -651,33 +656,34 @@ public:
     friend class DataManager;
 
     void menu() override {
-        int choix;
-        do {
-            cout << "\n===== MENU ETUDIANT =====\n";
-            cout << "1. Afficher mes informations\n";
-            cout << "2. Consulter mes matieres\n";
-            cout << "3. Consulter mes notes\n";
-            cout << "4. Consulter mon emploi du temps\n";
-            cout << "5. Consulter mes paiements\n";
-            cout << "6. Consulter mes absences / retards\n";
-            cout << "7. Quitter\n";
-            cout << "Choix : ";
-            cin >> choix;
-            cin.ignore();
+    int choix;
+    do {
+        cout << "\n===== MENU ETUDIANT =====\n";
+        cout << "1. Afficher mes informations\n";
+        cout << "2. Consulter mes matieres\n";
+        cout << "3. Consulter mes notes\n";
+        cout << "4. Consulter mon emploi du temps\n";
+        cout << "5. Consulter mes paiements\n";
+        cout << "6. Consulter mes absences / retards\n";
+        cout << "7. Quitter\n";
+        cout << "Choix : ";
 
-            switch (choix) {
-                case 1: afficherInfos(); break;
-                case 2: consulterMatieres(); break;
-                case 3: consulterNotes(); break;
-                case 4: consulterEmploi(); break;
-                case 5: consulterPaiements(); break;
-                case 6:
-                    cout << "Absences : " << getAbsence()
-                         << " | Retards : " << getRetard() << endl;
-                    break;
-            }
-        } while (choix != 7);
-    }
+        choix = lireEntier();
+        if (!verifierChoix(choix, 1, 7)) continue;
+
+        switch (choix) {
+            case 1: afficherInfos(); break;
+            case 2: consulterMatieres(); break;
+            case 3: consulterNotes(); break;
+            case 4: consulterEmploi(); break;
+            case 5: consulterPaiements(); break;
+            case 6:
+                cout << "Absences : " << getAbsence()
+                     << " | Retards : " << getRetard() << endl;
+                break;
+        }
+    } while (choix != 7);
+}
 };
 
 class Bibliothecaire : public Personne {
@@ -721,36 +727,44 @@ public:
         f.close();
     }
 
-    void menu() override {
-        int choix;
-        do {
-            cout << "\n===== MENU BIBLIOTHECAIRE =====\n";
-            cout << "1. Enregistrer un emprunt\n";
-            cout << "2. Enregistrer un retour\n";
-            cout << "3. Consulter les emprunts\n";
-            cout << "4. Quitter\n";
-            cout << "Choix : ";
-            cin >> choix;
-            cin.ignore();
+   void menu() override {
+    int choix;
+    do {
+        cout << "\n===== MENU BIBLIOTHECAIRE =====\n";
+        cout << "1. Enregistrer un emprunt\n";
+        cout << "2. Enregistrer un retour\n";
+        cout << "3. Consulter les emprunts\n";
+        cout << "4. Quitter\n";
+        cout << "Choix : ";
 
-            if (choix == 1 || choix == 2) {
-                int idE;
-                string livre;
-                cout << "ID Etudiant : ";
-                cin >> idE;
-                cin.ignore();
-                cout << "Nom du livre : ";
-                getline(cin, livre);
-                Etudiant* e = DataManager::trouverEtudiant(idE);
-                if (e) {
-                    if (choix == 1) enregistrerEmprunt(*e, livre);
-                    else enregistrerRetour(*e, livre);
-                } else cout << "Etudiant non trouve.\n";
-            } else if (choix == 3) {
-                consulterEmprunts();
+        choix = lireEntier();
+        if (!verifierChoix(choix, 1, 4)) continue;
+
+        if (choix == 1 || choix == 2) {
+            int idE;
+            string livre;
+
+            cout << "ID Etudiant : ";
+            idE = lireEntier();
+
+            cout << "Nom du livre : ";
+            getline(cin, livre);
+
+            Etudiant* e = DataManager::trouverEtudiant(idE);
+            if (e) {
+                if (choix == 1) enregistrerEmprunt(*e, livre);
+                else enregistrerRetour(*e, livre);
+            } else {
+                cout << "Etudiant non trouve.\n";
             }
-        } while (choix != 4);
-    }
+        }
+        else if (choix == 3) {
+            consulterEmprunts();
+        }
+
+    } while (choix != 4);
+}
+
 };
 
 class Caissiere : public Personne {
@@ -772,34 +786,39 @@ public:
     }
 
     void menu() override {
-        int choix;
-        do {
-            cout << "\n===== MENU CAISSIERE =====\n";
-            cout << "1. Encaisser un paiement\n";
-            cout << "2. Consulter les paiements\n";
-            cout << "3. Quitter\n";
-            cout << "Choix : ";
-            cin >> choix;
-            cin.ignore();
+    int choix;
+    do {
+        cout << "\n===== MENU CAISSIERE =====\n";
+        cout << "1. Encaisser un paiement\n";
+        cout << "2. Consulter les paiements\n";
+        cout << "3. Quitter\n";
+        cout << "Choix : ";
 
-            if (choix == 1) {
-                int idE;
-                float montant;
-                cout << "ID Etudiant : ";
-                cin >> idE;
-                cout << "Montant : ";
-                cin >> montant;
-                Etudiant* e = DataManager::trouverEtudiant(idE);
-                if (e) {
-                    encaisserPaiement(*e, montant);
-                } else cout << "Etudiant non trouve.\n";
-            } else if (choix == 2) {
-                cout << "\n--- LISTE DES PAIEMENTS ---\n";
-                for (const auto& p : DataManager::paiements)
-                    p.afficher();
-            }
-        } while (choix != 3);
-    }
+        choix = lireEntier();
+        if (!verifierChoix(choix, 1, 3)) continue;
+
+        if (choix == 1) {
+            int idE;
+            float montant;
+
+            cout << "ID Etudiant : ";
+            idE = lireEntier();
+
+            cout << "Montant : ";
+            montant = lireFloat();   // ⚠️ ajoute lireFloat()
+
+            Etudiant* e = DataManager::trouverEtudiant(idE);
+            if (e) encaisserPaiement(*e, montant);
+            else cout << "Etudiant non trouve.\n";
+        }
+        else if (choix == 2) {
+            for (const auto& p : DataManager::paiements)
+                p.afficher();
+        }
+
+    } while (choix != 3);
+}
+
 };
 
 class PersonnelMenage : public Personne {
@@ -824,20 +843,23 @@ public:
     }
 
     void menu() override {
-        int choix;
-        do {
-            cout << "\n===== MENU PERSONNEL MENAGE =====\n";
-            cout << "1. Nettoyer ma zone\n";
-            cout << "2. Afficher mes informations\n";
-            cout << "3. Quitter\n";
-            cout << "Choix : ";
-            cin >> choix;
-            cin.ignore();
+    int choix;
+    do {
+        cout << "\n===== MENU PERSONNEL MENAGE =====\n";
+        cout << "1. Nettoyer ma zone\n";
+        cout << "2. Afficher mes informations\n";
+        cout << "3. Quitter\n";
+        cout << "Choix : ";
 
-            if (choix == 1) nettoyer();
-            else if (choix == 2) afficherInfos();
-        } while (choix != 3);
-    }
+        choix = lireEntier();
+        if (!verifierChoix(choix, 1, 3)) continue;
+
+        if (choix == 1) nettoyer();
+        else if (choix == 2) afficherInfos();
+
+    } while (choix != 3);
+}
+
 };
 
 class DirecteurPedagogique : public Personne {
@@ -855,54 +877,56 @@ public:
     }
 
     void menu() override {
-        int choix;
-        do {
-            cout << "\n===== MENU DIRECTEUR PEDAGOGIQUE =====\n";
-            cout << "1. Planifier un cours\n";
-            cout << "2. Consulter les cours\n";
-            cout << "3. Consulter les matieres\n";
-            cout << "4. Consulter les salles\n";
-            cout << "5. Quitter\n";
-            cout << "Choix : ";
-            cin >> choix;
-            cin.ignore();
+    int choix;
+    do {
+        cout << "\n===== MENU DIRECTEUR PEDAGOGIQUE =====\n";
+        cout << "1. Planifier un cours\n";
+        cout << "2. Consulter les cours\n";
+        cout << "3. Consulter les matieres\n";
+        cout << "4. Consulter les salles\n";
+        cout << "5. Quitter\n";
+        cout << "Choix : ";
 
-            if (choix == 1) {
-                int idE, idM, idS;
-                string jour, hd, hf;
-                cout << "ID Etudiant : ";
-                cin >> idE;
-                cout << "ID Matiere : ";
-                cin >> idM;
-                cout << "ID Salle : ";
-                cin >> idS;
-                cin.ignore();
-                cout << "Jour : ";
-                getline(cin, jour);
-                cout << "Heure debut : ";
-                getline(cin, hd);
-                cout << "Heure fin : ";
-                getline(cin, hf);
-                Etudiant* e = DataManager::trouverEtudiant(idE);
-                if (e) {
-                    Cours c(DataManager::nextCoursId++, idM, idS, jour, hd, hf, idE);
-                    planifierCours(*e, c);
-                } else cout << "Etudiant non trouve.\n";
-            } else if (choix == 2) {
-                cout << "\n--- LISTE DES COURS ---\n";
-                for (const auto& c : DataManager::cours)
-                    c.afficher();
-            } else if (choix == 3) {
-                cout << "\n--- LISTE DES MATIERES ---\n";
-                for (const auto& m : DataManager::matieres)
-                    m.afficher();
-            } else if (choix == 4) {
-                cout << "\n--- LISTE DES SALLES ---\n";
-                for (const auto& s : DataManager::salles)
-                    s.afficher();
-            }
-        } while (choix != 5);
-    }
+        choix = lireEntier();
+        if (!verifierChoix(choix, 1, 5)) continue;
+
+        if (choix == 1) {
+            int idE, idM, idS;
+            string jour, hd, hf;
+
+            cout << "ID Etudiant : ";
+            idE = lireEntier();
+            cout << "ID Matiere : ";
+            idM = lireEntier();
+            cout << "ID Salle : ";
+            idS = lireEntier();
+
+            cout << "Jour : ";
+            getline(cin, jour);
+            cout << "Heure debut : ";
+            getline(cin, hd);
+            cout << "Heure fin : ";
+            getline(cin, hf);
+
+            Etudiant* e = DataManager::trouverEtudiant(idE);
+            if (e) {
+                Cours c(DataManager::nextCoursId++, idM, idS, jour, hd, hf, idE);
+                planifierCours(*e, c);
+            } else cout << "Etudiant non trouve.\n";
+        }
+        else if (choix == 2) {
+            for (const auto& c : DataManager::cours) c.afficher();
+        }
+        else if (choix == 3) {
+            for (const auto& m : DataManager::matieres) m.afficher();
+        }
+        else if (choix == 4) {
+            for (const auto& s : DataManager::salles) s.afficher();
+        }
+
+    } while (choix != 5);
+}
+
 };
 
 class ResponsableSite : public Personne {
@@ -1439,6 +1463,41 @@ void DataManager::chargerPersonnes() {
     f.close();
     chargerRelationsEtudiants();
 }
+int lireEntier() {
+    int x;
+    while (true) {
+        cin >> x;
+        if (!cin.fail()) {
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return x;
+        }
+        cout << "Entree invalide. Entrez un nombre : ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+}
+bool verifierChoix(int choix, int min, int max) {
+    if (choix < min || choix > max) {
+        cout << "Choix invalide. Reessayez.\n";
+        return false;
+    }
+    return true;
+}
+float lireFloat() {
+    float x;
+    while (true) {
+        cin >> x;
+        if (!cin.fail()) {
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return x;
+        }
+        cout << " Entree invalide. Entrez un nombre decimal : ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+}
+
+
 
 // Main function with authentication and menu system
 int main() {
@@ -1465,190 +1524,60 @@ int main() {
     DataManager::chargerToutesLesDonnees();
     
     // Main menu
-    int choix;
-    Personne* currentUser = nullptr;
-    
-    do {
-        cout << "\n===== MENU PRINCIPAL =====\n";
-        cout << "1. Login\n";
-        // cout << "2. Creer un compte\n";
-        // cout << "3. Gestion des matieres\n";
-        // cout << "4. Gestion des salles\n";
-        cout << "5. Quitter\n";
-        cout << "Choix : ";
-        cin >> choix;
-        cin.ignore();
+   
 
-        if (choix == 1) {
-            int id;
+int choix;
+Personne* currentUser = nullptr;
+
+do {
+    cout << "\n===== MENU PRINCIPAL =====\n";
+    cout << "1. Login\n";
+    cout << "2. Quitter\n";
+    cout << "Choix : ";
+
+    choix = lireEntier();
+    if (!verifierChoix(choix, 1, 2)) continue;
+
+    if (choix == 1) {
+
+        int id;
+        cout << "Entrez votre ID : ";
+        id = lireEntier();
+
+        int tentativesPwd = 0;
+        bool connecte = false;
+
+        while (tentativesPwd < 5) {
             string password;
-            cout << "Entrez votre ID : ";
-            cin >> id;
-            cin.ignore(); // Clear the input buffer
+
             cout << "Entrez votre Mot de Passe : ";
-            getline(cin, password); // Use getline to handle passwords properly
-            currentUser = nullptr; // Reset currentUser before login attempt
+            getline(cin, password);
+
             try {
                 currentUser = DataManager::login(id, password);
-            } catch (const runtime_error& e) {
-                cout << e.what() << endl;
-                currentUser = nullptr; // Ensure currentUser is null on error
-            }
-
-            if (currentUser) {
-                cout << "Bienvenue " << currentUser->getNomComplet() << "!\n";
+                cout << " Bienvenue " << currentUser->getNomComplet() << " !\n";
                 currentUser->menu();
+                connecte = true;
+                break;
             }
-            //  else {
-            //     cout << "Person non trouvee.\n";
-            // }
-        } else if (choix == 2) {
-            int type;
-            cout << "Type de compte:\n";
-            cout << "1. Etudiant\n2. Enseignant\n3. Caissiere\n4. Directeur Pedagogique\n";
-            cout << "5. Bibliothecaire\n6. Surveillant General\n7. Infirmier\n";
-            cout << "8. Agent Securite\n9. Technicien\n10. Responsable Site\n11. Personnel Menage\n";
-            cout << "Choix : ";
-            cin >> type;
-            cin.ignore();
-            
-            int id = DataManager::nextPersonneId++;
-            string prenom, nom, date, email;
-            cout << "Prenom : ";
-            getline(cin, prenom);
-            cout << "Nom : ";
-            getline(cin, nom);
-            cout << "Date de naissance (JJ/MM/AAAA) : ";
-            getline(cin, date);
-            cout << "Email : ";
-            getline(cin, email);
-
-            Personne* p = nullptr;
-            if (type == 1) {
-                p = new Etudiant(id, prenom, nom, date, email);
-                DataManager::etudiants.push_back((Etudiant*)p);
-            } else if (type == 2) {
-                p = new Enseignant(id, prenom, nom, date, email);
-            } else if (type == 3) {
-                p = new Caissiere(id, prenom, nom, date, email);
-            } else if (type == 4) {
-                p = new DirecteurPedagogique(id, prenom, nom, date, email);
-            } else if (type == 5) {
-                p = new Bibliothecaire(id, prenom, nom, date, email);
-            } else if (type == 6) {
-                p = new SurveillantGeneral(id, prenom, nom, date, email);
-            } else if (type == 7) {
-                p = new Infirmier(id, prenom, nom, date, email);
-            } else if (type == 8) {
-                p = new AgentSecurite(id, prenom, nom, date, email);
-            } else if (type == 9) {
-                p = new Technicien(id, prenom, nom, date, email);
-            } else if (type == 10) {
-                p = new ResponsableSite(id, prenom, nom, date, email);
-            } else if (type == 11) {
-                string zone;
-                cout << "Zone : ";
-                getline(cin, zone);
-                p = new PersonnelMenage(id, prenom, nom, date, email, zone);
-            }
-            
-            if (p) {
-                DataManager::personnes.push_back(p);
-                DataManager::sauvegarderPersonnes();
-                cout << "Compte cree avec succes. Votre ID est : " << id << endl;
-            }
-        } else if (choix == 3) {
-            // Gestion des matieres
-            int choixM;
-            cout << "\n===== GESTION DES MATIERES =====\n";
-            cout << "1. Ajouter une matiere\n";
-            cout << "2. Consulter les matieres\n";
-            cout << "3. Modifier une matiere\n";
-            cout << "Choix : ";
-            cin >> choixM;
-            cin.ignore();
-            
-            if (choixM == 1) {
-                string nom, desc;
-                int coef;
-                cout << "Nom : ";
-                getline(cin, nom);
-                cout << "Coefficient : ";
-                cin >> coef;
-                cin.ignore();
-                cout << "Description : ";
-                getline(cin, desc);
-                Matiere m(DataManager::nextMatiereId++, nom, coef, desc);
-                m.sauvegarder();
-                DataManager::matieres.push_back(m);
-                cout << "Matiere ajoutee.\n";
-            } else if (choixM == 2) {
-                for (const auto& m : DataManager::matieres)
-                    m.afficher();
-            } else if (choixM == 3) {
-                int id;
-                cout << "ID Matiere : ";
-                cin >> id;
-                Matiere* m = DataManager::trouverMatiere(id);
-                if (m) {
-                    string nom, desc;
-                    int coef;
-                    cout << "Nouveau nom : ";
-                    cin.ignore();
-                    getline(cin, nom);
-                    cout << "Nouveau coefficient : ";
-                    cin >> coef;
-                    cin.ignore();
-                    cout << "Nouvelle description : ";
-                    getline(cin, desc);
-                    m->modifier(nom, coef, desc);
-                    DataManager::sauvegarderMatieres();
-                    cout << "Matiere modifiee.\n";
-                }
-            }
-        } else if (choix == 4) {
-            // Gestion des salles
-            int choixS;
-            cout << "\n===== GESTION DES SALLES =====\n";
-            cout << "1. Ajouter une salle\n";
-            cout << "2. Consulter les salles\n";
-            cout << "3. Reserver/Liberer une salle\n";
-            cout << "Choix : ";
-            cin >> choixS;
-            cin.ignore();
-            
-            if (choixS == 1) {
-                string num;
-                int cap, etage;
-                cout << "Numero : ";
-                getline(cin, num);
-                cout << "Capacite : ";
-                cin >> cap;
-                cout << "Etage : ";
-                cin >> etage;
-                Salle s(DataManager::nextSalleId++, num, cap, etage);
-                s.sauvegarder();
-                DataManager::salles.push_back(s);
-                cout << "Salle ajoutee.\n";
-            } else if (choixS == 2) {
-                for (const auto& s : DataManager::salles)
-                    s.afficher();
-            } else if (choixS == 3) {
-                int id;
-                cout << "ID Salle : ";
-                cin >> id;
-                Salle* s = DataManager::trouverSalle(id);
-                if (s) {
-                    int action;
-                    cout << "1. Reserver\n2. Liberer\n";
-                    cin >> action;
-                    if (action == 1) s->reserver();
-                    else s->liberer();
-                    DataManager::sauvegarderSalles();
-                }
+            catch (const runtime_error&) {
+                tentativesPwd++;
+                cout << " Mot de passe incorrect.\n";
+                cout << "Tentative " << tentativesPwd << " / 5\n\n";
             }
         }
-    } while (choix != 5);
+
+        if (!connecte) {
+            cout << "Trop de tentatives incorrectes.\n";
+            cout << "Retour au menu principal...\n";
+        }
+    }
+
+} while (choix != 2);
+
+
+
+
 
     // Save all data before exit
     DataManager::sauvegarderToutesLesDonnees();
