@@ -7,10 +7,27 @@
 #include <iomanip>
 #include <limits>
 
+
 using namespace std;
+#define RESET   "\033[0m"
+#define ROUGE   "\033[31m"
+#define VERT    "\033[32m"
+#define JAUNE   "\033[33m"
+#define BLEU    "\033[34m"
+#define CYAN    "\033[36m"
+#define GRAS    "\033[1m"
 int lireEntier();
 float lireFloat();
 bool verifierChoix(int choix, int min, int max);
+string centrer(const string& texte, int largeur = 60);
+void ligne();
+void dessinerLigneHaut();
+void dessinerLigneBas();
+void dessinerLigneSep();
+string encadrerTexte(const string& texte);
+void afficherTitreSection(const string& titre);
+
+
 
 // Forward declarations
 class Etudiant;
@@ -84,16 +101,17 @@ public:
     void supprimerRetard() { if (retard > 0) retard--; }
 
     // Affichage
-    virtual void afficherInfos() const {
-        cout << "ID : " << id << endl;
-        cout << "Nom complet : " << getNomComplet() << endl;
-        cout << "Date de naissance : " << dateNaissance << endl;
-        cout << "Email : " << email << endl;
-        cout << "Telephone : " << telephone << endl;
-        cout << "Adresse : " << adresse << endl;
-        cout << "Absences : " << absence << endl;
-        cout << "Retards : " << retard << endl;
-        cout << "Actif : " << (actif ? "Oui" : "Non") << endl;
+    virtual     void afficherInfos() const {
+        afficherTitreSection("MES INFORMATIONS");
+        cout << centrer("ID : " + to_string(id)) << "\n";
+        cout << centrer("Nom complet : " + getNomComplet()) << "\n";
+        cout << centrer("Date de naissance : " + dateNaissance) << "\n";
+        cout << centrer("Email : " + email) << "\n";
+        cout << centrer("Telephone : " + telephone) << "\n";
+        cout << centrer("Adresse : " + adresse) << "\n";
+        cout << centrer("Absences : " + to_string(absence)) << "\n";
+        cout << centrer("Retards : " + to_string(retard)) << "\n";
+        cout << centrer("Actif : " + string(actif ? "Oui" : "Non")) << "\n";
     }
 
     // File I/O
@@ -361,13 +379,19 @@ public:
     const vector<Cours>& getCours() const { return cours; }
 
     void consulter() const {
-        cout << "\n--- EMPLOI DU TEMPS ---\n";
+        afficherTitreSection("EMPLOI DU TEMPS");
         if (cours.empty()) {
-            cout << "Aucun cours planifie.\n";
+            cout << centrer("Aucun cours planifie.") << "\n";
             return;
         }
-        for (const auto& c : cours)
-            c.afficher();
+        for (const auto& c : cours) {
+            stringstream ss;
+            ss << "Cours [" << c.getId() << "] " << c.getJour() << " " 
+               << c.getHeureDebut() << "-" << c.getHeureFin()
+               << " | Matiere ID: " << c.getIdMatiere()
+               << " | Salle ID: " << c.getIdSalle();
+            cout << centrer(ss.str()) << "\n";
+        }
     }
 };
 
@@ -603,9 +627,9 @@ public:
     string getType() const override { return "Etudiant"; }
 
    void consulterMatieres() const {
-    cout << "\n--- MES MATIERES ---\n";
+    afficherTitreSection("MES MATIERES");
     if (DataManager::matieres.empty()) {
-        cout << "Aucune matiere.\n";
+        cout << centrer("Aucune matiere.") << "\n";
     } else {
         for (const auto& m : DataManager::matieres)
             m.afficher();
@@ -613,12 +637,17 @@ public:
 }
 
     void consulterNotes() const {
-        cout << "\n--- MES NOTES ---\n";
+        afficherTitreSection("MES NOTES");
         if (notes.empty())
-            cout << "Aucune note.\n";
-        else
-            for (const auto& n : notes)
-                n.afficher();
+            cout << centrer("Aucune note.") << "\n";
+        else {
+            for (const auto& n : notes) {
+                stringstream ss;
+                ss << "Note [" << n.getId() << "] " << n.getValeur() 
+                   << " | Date: " << n.getDate() << " | Matiere ID: " << n.getIdMatiere();
+                cout << centrer(ss.str()) << "\n";
+            }
+        }
     }
 
     void consulterEmploi() const {
@@ -626,12 +655,17 @@ public:
     }
 
     void consulterPaiements() const {
-        cout << "\n--- MES PAIEMENTS ---\n";
+        afficherTitreSection("MES PAIEMENTS");
         if (paiements.empty())
-            cout << "Aucun paiement.\n";
-        else
-            for (const auto& p : paiements)
-                p.afficher();
+            cout << centrer("Aucun paiement.") << "\n";
+        else {
+            for (const auto& p : paiements) {
+                stringstream ss;
+                ss << "Paiement [" << p.getId() << "] " << p.getMontant() 
+                   << " DH | " << p.getDate() << " | Type: " << p.getType();
+                cout << centrer(ss.str()) << "\n";
+            }
+        }
     }
 
     void ajouterPaiement(const Paiement& p) {
@@ -655,35 +689,59 @@ public:
     friend class DirecteurPedagogique;
     friend class DataManager;
 
-    void menu() override {
+   void menu() override {
     int choix;
     do {
-        cout << "\n===== MENU ETUDIANT =====\n";
-        cout << "1. Afficher mes informations\n";
-        cout << "2. Consulter mes matieres\n";
-        cout << "3. Consulter mes notes\n";
-        cout << "4. Consulter mon emploi du temps\n";
-        cout << "5. Consulter mes paiements\n";
-        cout << "6. Consulter mes absences / retards\n";
-        cout << "7. Quitter\n";
-        cout << "Choix : ";
+        cout << "\n";
+        dessinerLigneHaut();
+        string titre = string(GRAS) + CYAN + "**** MENU ETUDIANT ****" + RESET;
+        cout << encadrerTexte(titre) << "\n";
+        dessinerLigneSep();
+        cout << encadrerTexte("1. Afficher mes informations") << "\n";
+        cout << encadrerTexte("2. Consulter mes matieres") << "\n";
+        cout << encadrerTexte("3. Consulter mes notes") << "\n";
+        cout << encadrerTexte("4. Consulter mon emploi du temps") << "\n";
+        cout << encadrerTexte("5. Consulter mes paiements") << "\n";
+        cout << encadrerTexte("6. Consulter mes absences / retards") << "\n";
+        string quitter = string(ROUGE) + "7. Quitter" + RESET;
+        cout << encadrerTexte(quitter) << "\n";
+        dessinerLigneBas();
+        cout << centrer("Choix : ");
 
         choix = lireEntier();
         if (!verifierChoix(choix, 1, 7)) continue;
 
         switch (choix) {
-            case 1: afficherInfos(); break;
-            case 2: consulterMatieres(); break;
-            case 3: consulterNotes(); break;
-            case 4: consulterEmploi(); break;
-            case 5: consulterPaiements(); break;
+            case 1:
+                afficherInfos();
+                break;
+
+            case 2:
+                consulterMatieres();
+                break;
+
+            case 3:
+                consulterNotes();
+                break;
+
+            case 4:
+                consulterEmploi();
+                break;
+
+            case 5:
+                consulterPaiements();
+                break;
+
             case 6:
-                cout << "Absences : " << getAbsence()
-                     << " | Retards : " << getRetard() << endl;
+                cout << "\n";
+                cout << centrer("Absences : " + to_string(getAbsence())) << "\n";
+                cout << centrer("Retards  : " + to_string(getRetard())) << "\n";
                 break;
         }
+
     } while (choix != 7);
 }
+
 };
 
 class Bibliothecaire : public Personne {
@@ -697,23 +755,23 @@ public:
         ofstream f("bibliotheque.txt", ios::app);
         f << e.getId() << ";" << livre << ";" << "EMPRUNT\n";
         f.close();
-        cout << "Emprunt enregistre.\n";
+        cout << centrer("Emprunt enregistre.") << "\n";
     }
 
     void enregistrerRetour(Etudiant& e, const string& livre) {
         ofstream f("bibliotheque.txt", ios::app);
         f << e.getId() << ";" << livre << ";" << "RETOUR\n";
         f.close();
-        cout << "Retour enregistre.\n";
+        cout << centrer("Retour enregistre.") << "\n";
     }
 
     void consulterEmprunts() {
         ifstream f("bibliotheque.txt");
         if (!f.is_open()) {
-            cout << "Aucun emprunt enregistre.\n";
+            cout << centrer("Aucun emprunt enregistre.") << "\n";
             return;
         }
-        cout << "\n--- LISTE DES EMPRUNTS ---\n";
+        afficherTitreSection("LISTE DES EMPRUNTS");
         string line;
         while (getline(f, line)) {
             if (line.empty()) continue;
@@ -722,7 +780,7 @@ public:
             getline(ss, id, ';');
             getline(ss, livre, ';');
             getline(ss, type, ';');
-            cout << "Etudiant " << id << " - " << livre << " (" << type << ")\n";
+            cout << centrer("Etudiant " + id + " - " + livre + " (" + type + ")") << "\n";
         }
         f.close();
     }
@@ -730,12 +788,18 @@ public:
    void menu() override {
     int choix;
     do {
-        cout << "\n===== MENU BIBLIOTHECAIRE =====\n";
-        cout << "1. Enregistrer un emprunt\n";
-        cout << "2. Enregistrer un retour\n";
-        cout << "3. Consulter les emprunts\n";
-        cout << "4. Quitter\n";
-        cout << "Choix : ";
+        cout << "\n";
+        dessinerLigneHaut();
+        string titre = string(GRAS) + CYAN + "**** MENU BIBLIOTHECAIRE ****" + RESET;
+        cout << encadrerTexte(titre) << "\n";
+        dessinerLigneSep();
+        cout << encadrerTexte("1. Enregistrer un emprunt") << "\n";
+        cout << encadrerTexte("2. Enregistrer un retour") << "\n";
+        cout << encadrerTexte("3. Consulter les emprunts") << "\n";
+        string quitter = string(ROUGE) + "4. Quitter" + RESET;
+        cout << encadrerTexte(quitter) << "\n";
+        dessinerLigneBas();
+        cout << centrer("Choix : ");
 
         choix = lireEntier();
         if (!verifierChoix(choix, 1, 4)) continue;
@@ -744,18 +808,23 @@ public:
             int idE;
             string livre;
 
-            cout << "ID Etudiant : ";
+            cout << centrer("ID Etudiant : ");
             idE = lireEntier();
 
-            cout << "Nom du livre : ";
+            cout << centrer("Nom du livre : ");
             getline(cin, livre);
 
             Etudiant* e = DataManager::trouverEtudiant(idE);
             if (e) {
-                if (choix == 1) enregistrerEmprunt(*e, livre);
-                else enregistrerRetour(*e, livre);
+                if (choix == 1) {
+                    enregistrerEmprunt(*e, livre);
+                    cout << centrer("Emprunt enregistre avec succes.") << "\n";
+                } else {
+                    enregistrerRetour(*e, livre);
+                    cout << centrer("Retour enregistre avec succes.") << "\n";
+                }
             } else {
-                cout << "Etudiant non trouve.\n";
+                cout << centrer("Etudiant non trouve.") << "\n";
             }
         }
         else if (choix == 3) {
@@ -764,6 +833,7 @@ public:
 
     } while (choix != 4);
 }
+
 
 };
 
@@ -776,23 +846,29 @@ public:
 
     void encaisserPaiement(Etudiant& e, float montant, const string& type = "Frais") {
         string date;
-        cout << "Date (JJ/MM/AAAA) : ";
+        cout << centrer("Date (JJ/MM/AAAA) : ");
         cin >> date;
         Paiement p(DataManager::nextPaiementId++, e.getId(), montant, date, type);
         e.ajouterPaiement(p);
         p.sauvegarder();
         DataManager::paiements.push_back(p);
-        cout << "Paiement encaisse avec succes.\n";
+        cout << centrer("Paiement encaisse avec succes.") << "\n";
     }
 
     void menu() override {
     int choix;
     do {
-        cout << "\n===== MENU CAISSIERE =====\n";
-        cout << "1. Encaisser un paiement\n";
-        cout << "2. Consulter les paiements\n";
-        cout << "3. Quitter\n";
-        cout << "Choix : ";
+        cout << "\n";
+        dessinerLigneHaut();
+        string titre = string(GRAS) + CYAN + "**** MENU CAISSIERE ****" + RESET;
+        cout << encadrerTexte(titre) << "\n";
+        dessinerLigneSep();
+        cout << encadrerTexte("1. Encaisser un paiement") << "\n";
+        cout << encadrerTexte("2. Consulter les paiements") << "\n";
+        string quitter = string(ROUGE) + "3. Quitter" + RESET;
+        cout << encadrerTexte(quitter) << "\n";
+        dessinerLigneBas();
+        cout << centrer("Choix : ");
 
         choix = lireEntier();
         if (!verifierChoix(choix, 1, 3)) continue;
@@ -801,19 +877,28 @@ public:
             int idE;
             float montant;
 
-            cout << "ID Etudiant : ";
+            cout << centrer("ID Etudiant : ");
             idE = lireEntier();
 
-            cout << "Montant : ";
-            montant = lireFloat();   // ⚠️ ajoute lireFloat()
+            cout << centrer("Montant : ");
+            montant = lireFloat();
 
             Etudiant* e = DataManager::trouverEtudiant(idE);
-            if (e) encaisserPaiement(*e, montant);
-            else cout << "Etudiant non trouve.\n";
+            if (e) {
+                encaisserPaiement(*e, montant);
+                cout << centrer("Paiement encaisse avec succes.") << "\n";
+            } else {
+                cout << centrer("Etudiant non trouve.") << "\n";
+            }
         }
         else if (choix == 2) {
-            for (const auto& p : DataManager::paiements)
-                p.afficher();
+            afficherTitreSection("LISTE DES PAIEMENTS");
+            for (const auto& p : DataManager::paiements) {
+                stringstream ss;
+                ss << "Paiement [" << p.getId() << "] " << p.getMontant() 
+                   << " DH | " << p.getDate() << " | Type: " << p.getType();
+                cout << centrer(ss.str()) << "\n";
+            }
         }
 
     } while (choix != 3);
@@ -836,29 +921,40 @@ public:
     }
 
     void nettoyer() {
-        cout << "Nettoyage de la zone : " << zone << endl;
+        cout << centrer("Nettoyage de la zone : " + zone) << "\n";
         ofstream f("nettoyage.txt", ios::app);
         f << "Zone " << zone << " nettoyee le " << __DATE__ << "\n";
         f.close();
     }
 
-    void menu() override {
+   void menu() override {
     int choix;
     do {
-        cout << "\n===== MENU PERSONNEL MENAGE =====\n";
-        cout << "1. Nettoyer ma zone\n";
-        cout << "2. Afficher mes informations\n";
-        cout << "3. Quitter\n";
-        cout << "Choix : ";
+        cout << "\n";
+        dessinerLigneHaut();
+        string titre = string(GRAS) + CYAN + "**** MENU PERSONNEL MENAGE ****" + RESET;
+        cout << encadrerTexte(titre) << "\n";
+        dessinerLigneSep();
+        cout << encadrerTexte("1. Nettoyer ma zone") << "\n";
+        cout << encadrerTexte("2. Afficher mes informations") << "\n";
+        cout << encadrerTexte("3. Quitter") << "\n";
+        dessinerLigneBas();
+        cout << centrer("Choix : ");
 
         choix = lireEntier();
         if (!verifierChoix(choix, 1, 3)) continue;
 
-        if (choix == 1) nettoyer();
-        else if (choix == 2) afficherInfos();
+        if (choix == 1) {
+            nettoyer();
+            cout << centrer("Zone nettoyee avec succes.") << "\n";
+        }
+        else if (choix == 2) {
+            afficherInfos();
+        }
 
     } while (choix != 3);
 }
+
 
 };
 
@@ -873,19 +969,25 @@ public:
         e.ajouterCours(c);
         c.sauvegarder();
         DataManager::cours.push_back(c);
-        cout << "Cours planifie avec succes.\n";
+        cout << centrer("Cours planifie avec succes.") << "\n";
     }
 
-    void menu() override {
+   void menu() override {
     int choix;
     do {
-        cout << "\n===== MENU DIRECTEUR PEDAGOGIQUE =====\n";
-        cout << "1. Planifier un cours\n";
-        cout << "2. Consulter les cours\n";
-        cout << "3. Consulter les matieres\n";
-        cout << "4. Consulter les salles\n";
-        cout << "5. Quitter\n";
-        cout << "Choix : ";
+        cout << "\n";
+        dessinerLigneHaut();
+        string titre = string(GRAS) + CYAN + "**** MENU DIRECTEUR PEDAGOGIQUE ****" + RESET;
+        cout << encadrerTexte(titre) << "\n";
+        dessinerLigneSep();
+        cout << encadrerTexte("1. Planifier un cours") << "\n";
+        cout << encadrerTexte("2. Consulter les cours") << "\n";
+        cout << encadrerTexte("3. Consulter les matieres") << "\n";
+        cout << encadrerTexte("4. Consulter les salles") << "\n";
+        string quitter = string(ROUGE) + "5. Quitter" + RESET;
+        cout << encadrerTexte(quitter) << "\n";
+        dessinerLigneBas();
+        cout << centrer("Choix : ");
 
         choix = lireEntier();
         if (!verifierChoix(choix, 1, 5)) continue;
@@ -894,38 +996,67 @@ public:
             int idE, idM, idS;
             string jour, hd, hf;
 
-            cout << "ID Etudiant : ";
+            cout << centrer("ID Etudiant : ");
             idE = lireEntier();
-            cout << "ID Matiere : ";
+
+            cout << centrer("ID Matiere : ");
             idM = lireEntier();
-            cout << "ID Salle : ";
+
+            cout << centrer("ID Salle : ");
             idS = lireEntier();
 
-            cout << "Jour : ";
+            cout << centrer("Jour : ");
             getline(cin, jour);
-            cout << "Heure debut : ";
+
+            cout << centrer("Heure debut : ");
             getline(cin, hd);
-            cout << "Heure fin : ";
+
+            cout << centrer("Heure fin : ");
             getline(cin, hf);
 
             Etudiant* e = DataManager::trouverEtudiant(idE);
             if (e) {
                 Cours c(DataManager::nextCoursId++, idM, idS, jour, hd, hf, idE);
                 planifierCours(*e, c);
-            } else cout << "Etudiant non trouve.\n";
+                cout << centrer("Cours planifie avec succes.") << "\n";
+            } else {
+                cout << centrer("Etudiant non trouve.") << "\n";
+            }
         }
         else if (choix == 2) {
-            for (const auto& c : DataManager::cours) c.afficher();
+            afficherTitreSection("LISTE DES COURS");
+            for (const auto& c : DataManager::cours) {
+                stringstream ss;
+                ss << "Cours [" << c.getId() << "] " << c.getJour() << " " 
+                   << c.getHeureDebut() << "-" << c.getHeureFin()
+                   << " | Matiere ID: " << c.getIdMatiere()
+                   << " | Salle ID: " << c.getIdSalle();
+                cout << centrer(ss.str()) << "\n";
+            }
         }
         else if (choix == 3) {
-            for (const auto& m : DataManager::matieres) m.afficher();
+            afficherTitreSection("LISTE DES MATIERES");
+            for (const auto& m : DataManager::matieres) {
+                stringstream ss;
+                ss << "Matiere [" << m.getId() << "] " << m.getNom() 
+                   << " (coef " << m.getCoefficient() << ") - " << m.getDescription();
+                cout << centrer(ss.str()) << "\n";
+            }
         }
         else if (choix == 4) {
-            for (const auto& s : DataManager::salles) s.afficher();
+            afficherTitreSection("LISTE DES SALLES");
+            for (const auto& s : DataManager::salles) {
+                stringstream ss;
+                ss << "Salle [" << s.getId() << "] " << s.getNumero() 
+                   << " | Cap: " << s.getCapacite() << " | Etage: " << s.getEtage()
+                   << " | Etat: " << (s.estDisponible() ? "Libre" : "Occupee");
+                cout << centrer(ss.str()) << "\n";
+            }
         }
 
     } while (choix != 5);
 }
+
 
 };
 
@@ -940,45 +1071,57 @@ public:
         ofstream f("maintenance.txt", ios::app);
         f << "PROBLEME;" << description << ";" << __DATE__ << "\n";
         f.close();
-        cout << "Probleme signale au service technique.\n";
+        cout << centrer("Probleme signale au service technique.") << "\n";
     }
 
     void consulterProblemes() {
         ifstream f("maintenance.txt");
         if (!f.is_open()) {
-            cout << "Aucun probleme signale.\n";
+            cout << centrer("Aucun probleme signale.") << "\n";
             return;
         }
-        cout << "\n--- LISTE DES PROBLEMES ---\n";
+        afficherTitreSection("LISTE DES PROBLEMES");
         string line;
         while (getline(f, line)) {
             if (line.empty()) continue;
-            cout << line << endl;
+            cout << centrer(line) << "\n";
         }
         f.close();
     }
 
     void menu() override {
-        int choix;
-        do {
-            cout << "\n===== MENU RESPONSABLE SITE =====\n";
-            cout << "1. Signaler un probleme\n";
-            cout << "2. Consulter les problemes\n";
-            cout << "3. Quitter\n";
-            cout << "Choix : ";
-            cin >> choix;
-            cin.ignore();
+    int choix;
+    do {
+        cout << "\n";
+        dessinerLigneHaut();
+        string titre = string(GRAS) + CYAN + "**** MENU RESPONSABLE SITE ****" + RESET;
+        cout << encadrerTexte(titre) << "\n";
+        dessinerLigneSep();
+        cout << encadrerTexte("1. Signaler un probleme") << "\n";
+        cout << encadrerTexte("2. Consulter les problemes") << "\n";
+        string quitter = string(ROUGE) + "3. Quitter" + RESET;
+        cout << encadrerTexte(quitter) << "\n";
+        dessinerLigneBas();
+        cout << centrer("Choix : ");
 
-            if (choix == 1) {
-                string desc;
-                cout << "Description du probleme : ";
-                getline(cin, desc);
-                signalerProbleme(desc);
-            } else if (choix == 2) {
-                consulterProblemes();
-            }
-        } while (choix != 3);
-    }
+        choix = lireEntier();
+        if (!verifierChoix(choix, 1, 3)) continue;
+
+        if (choix == 1) {
+            string desc;
+            cout << centrer("Description du probleme : ");
+            getline(cin, desc);
+
+            signalerProbleme(desc);
+            cout << centrer("Probleme signale avec succes.") << "\n";
+        }
+        else if (choix == 2) {
+            consulterProblemes();
+        }
+
+    } while (choix != 3);
+}
+
 };
 
 class Technicien : public Personne {
@@ -992,45 +1135,58 @@ public:
         ofstream f("maintenance.txt", ios::app);
         f << "REPARATION;" << intervention << ";" << __DATE__ << "\n";
         f.close();
-        cout << "Intervention technique enregistree.\n";
+        cout << centrer("Intervention technique enregistree.") << "\n";
     }
 
     void consulterInterventions() {
         ifstream f("maintenance.txt");
         if (!f.is_open()) {
-            cout << "Aucune intervention.\n";
+            cout << centrer("Aucune intervention.") << "\n";
             return;
         }
-        cout << "\n--- LISTE DES INTERVENTIONS ---\n";
+        afficherTitreSection("LISTE DES INTERVENTIONS");
         string line;
         while (getline(f, line)) {
             if (line.empty()) continue;
-            cout << line << endl;
+            cout << centrer(line) << "\n";
         }
         f.close();
     }
 
     void menu() override {
-        int choix;
-        do {
-            cout << "\n===== MENU TECHNICIEN =====\n";
-            cout << "1. Enregistrer une reparation\n";
-            cout << "2. Consulter les interventions\n";
-            cout << "3. Quitter\n";
-            cout << "Choix : ";
-            cin >> choix;
-            cin.ignore();
+    int choix;
+    do {
+        cout << "\n";
+        dessinerLigneHaut();
+        string titre = string(GRAS) + CYAN + "**** MENU TECHNICIEN ****" + RESET;
+        cout << encadrerTexte(titre) << "\n";
+        dessinerLigneSep();
+        cout << encadrerTexte("1. Enregistrer une reparation") << "\n";
+        cout << encadrerTexte("2. Consulter les interventions") << "\n";
+        string quitter = string(ROUGE) + "3. Quitter" + RESET;
+        cout << encadrerTexte(quitter) << "\n";
+        dessinerLigneBas();
+        cout << centrer("Choix : ");
 
-            if (choix == 1) {
-                string inter;
-                cout << "Description de l'intervention : ";
-                getline(cin, inter);
-                reparer(inter);
-            } else if (choix == 2) {
-                consulterInterventions();
-            }
-        } while (choix != 3);
-    }
+        choix = lireEntier();
+        if (!verifierChoix(choix, 1, 3)) continue;
+
+        if (choix == 1) {
+            string intervention;
+
+            cout << centrer("Description de l'intervention : ");
+            getline(cin, intervention);
+
+            reparer(intervention);
+            cout << centrer("Intervention enregistree avec succes.") << "\n";
+        }
+        else if (choix == 2) {
+            consulterInterventions();
+        }
+
+    } while (choix != 3);
+}
+
 };
 
 class SurveillantGeneral : public Personne {
@@ -1044,27 +1200,27 @@ public:
         p.ajouterAbsence();
         enregistrerAction("Absence", p.getId());
         DataManager::sauvegarderPersonnes();
-        cout << "Absence enregistree pour " << p.getNomComplet() << endl;
+        cout << centrer("Absence enregistree pour " + p.getNomComplet()) << "\n";
     }
 
     void enregistrerRetard(Personne& p) {
         p.ajouterRetard();
         enregistrerAction("Retard", p.getId());
         DataManager::sauvegarderPersonnes();
-        cout << "Retard enregistre pour " << p.getNomComplet() << endl;
+        cout << centrer("Retard enregistre pour " + p.getNomComplet()) << "\n";
     }
 
     void consulterabsence() {
         ifstream f("absence.txt");
         if (!f.is_open()) {
-            cout << "Aucun enregistrement.\n";
+            cout << centrer("Aucun enregistrement.") << "\n";
             return;
         }
-        cout << "\n--- ENREGISTREMENTS absence ---\n";
+        afficherTitreSection("ENREGISTREMENTS ABSENCE");
         string line;
         while (getline(f, line)) {
             if (line.empty()) continue;
-            cout << line << endl;
+            cout << centrer(line) << "\n";
         }
         f.close();
     }
@@ -1077,32 +1233,50 @@ private:
     }
 
 public:
-    void menu() override {
-        int choix;
-        do {
-            cout << "\n===== MENU SURVEILLANT GENERAL =====\n";
-            cout << "1. Enregistrer une absence\n";
-            cout << "2. Enregistrer un retard\n";
-            cout << "3. Consulter les enregistrements\n";
-            cout << "4. Quitter\n";
-            cout << "Choix : ";
-            cin >> choix;
-            cin.ignore();
+   void menu() override {
+    int choix;
+    do {
+        cout << "\n";
+        dessinerLigneHaut();
+        string titre = string(GRAS) + CYAN + "**** MENU SURVEILLANT GENERAL ****" + RESET;
+        cout << encadrerTexte(titre) << "\n";
+        dessinerLigneSep();
+        cout << encadrerTexte("1. Enregistrer une absence") << "\n";
+        cout << encadrerTexte("2. Enregistrer un retard") << "\n";
+        cout << encadrerTexte("3. Consulter les enregistrements") << "\n";
+        string quitter = string(ROUGE) + "4. Quitter" + RESET;
+        cout << encadrerTexte(quitter) << "\n";
+        dessinerLigneBas();
+        cout << centrer("Choix : ");
 
-            if (choix == 1 || choix == 2) {
-                int idP;
-                cout << "ID Personne : ";
-                cin >> idP;
-                Personne* p = DataManager::trouverPersonne(idP);
-                if (p) {
-                    if (choix == 1) enregistrerAbsence(*p);
-                    else enregistrerRetard(*p);
-                } else cout << "Personne non trouvee.\n";
-            } else if (choix == 3) {
-                consulterabsence();
+        choix = lireEntier();
+        if (!verifierChoix(choix, 1, 4)) continue;
+
+        if (choix == 1 || choix == 2) {
+            int idP;
+            cout << centrer("ID Personne : ");
+            idP = lireEntier();
+
+            Personne* p = DataManager::trouverPersonne(idP);
+            if (p) {
+                if (choix == 1) {
+                    enregistrerAbsence(*p);
+                    cout << centrer("Absence enregistree avec succes.") << "\n";
+                } else {
+                    enregistrerRetard(*p);
+                    cout << centrer("Retard enregistre avec succes.") << "\n";
+                }
+            } else {
+                cout << centrer("Personne non trouvee.") << "\n";
             }
-        } while (choix != 4);
-    }
+        }
+        else if (choix == 3) {
+            consulterabsence();
+        }
+
+    } while (choix != 4);
+}
+
 };
 
 class Enseignant : public Personne {
@@ -1116,93 +1290,130 @@ public:
         e.notes.push_back(n);
         n.sauvegarder(e.getId());
         DataManager::notes.push_back(n);
-        cout << "Note ajoutee avec succes.\n";
+        cout << centrer("Note ajoutee avec succes.") << "\n";
     }
 
     void modifierNote(Etudiant& e, int index, float nouvelleValeur) {
         if (index >= 0 && index < (int)e.notes.size()) {
             e.notes[index].modifier(nouvelleValeur);
-            cout << "Note modifiee.\n";
+            cout << centrer("Note modifiee.") << "\n";
             DataManager::sauvegarderNotes();
         } else {
-            cout << "Index invalide.\n";
+            cout << centrer("Index invalide.") << "\n";
         }
     }
 
     void supprimerNote(Etudiant& e, int index) {
         if (index >= 0 && index < (int)e.notes.size()) {
             e.notes.erase(e.notes.begin() + index);
-            cout << "Note supprimee.\n";
+            cout << centrer("Note supprimee.") << "\n";
             DataManager::sauvegarderNotes();
         } else {
-            cout << "Index invalide.\n";
+            cout << centrer("Index invalide.") << "\n";
         }
     }
 
-    void menu() override {
-        int choix;
-        do {
-            cout << "\n===== MENU ENSEIGNANT =====\n";
-            cout << "1. Ajouter une note\n";
-            cout << "2. Modifier une note\n";
-            cout << "3. Supprimer une note\n";
-            cout << "4. Consulter les etudiants\n";
-            cout << "5. Consulter les matieres\n";
-            cout << "6. Quitter\n";
-            cout << "Choix : ";
-            cin >> choix;
-            cin.ignore();
+   void menu() override {
+    int choix;
+    do {
+        cout << "\n";
+        dessinerLigneHaut();
+        string titre = string(GRAS) + CYAN + "**** MENU ENSEIGNANT ****" + RESET;
+        cout << encadrerTexte(titre) << "\n";
+        dessinerLigneSep();
+        cout << encadrerTexte("1. Ajouter une note") << "\n";
+        cout << encadrerTexte("2. Modifier une note") << "\n";
+        cout << encadrerTexte("3. Supprimer une note") << "\n";
+        cout << encadrerTexte("4. Consulter les etudiants") << "\n";
+        cout << encadrerTexte("5. Consulter les matieres") << "\n";
+        string quitter = string(ROUGE) + "6. Quitter" + RESET;
+        cout << encadrerTexte(quitter) << "\n";
+        dessinerLigneBas();
+        cout << centrer("Choix : ");
 
-            if (choix == 1) {
-                int idE, idM;
-                float val;
-                string date;
-                cout << "ID Etudiant : ";
-                cin >> idE;
-                cout << "ID Matiere : ";
-                cin >> idM;
-                cout << "Valeur : ";
-                cin >> val;
-                cin.ignore();
-                cout << "Date (JJ/MM/AAAA) : ";
-                getline(cin, date);
-                Etudiant* e = DataManager::trouverEtudiant(idE);
-                if (e) {
-                    Note n(DataManager::nextNoteId++, val, date, idM);
-                    ajouterNote(*e, n);
-                } else cout << "Etudiant non trouve.\n";
-            } else if (choix == 2) {
-                int idE, index;
-                float val;
-                cout << "ID Etudiant : ";
-                cin >> idE;
-                cout << "Index de la note : ";
-                cin >> index;
-                cout << "Nouvelle valeur : ";
-                cin >> val;
-                Etudiant* e = DataManager::trouverEtudiant(idE);
-                if (e) modifierNote(*e, index, val);
-                else cout << "Etudiant non trouve.\n";
-            } else if (choix == 3) {
-                int idE, index;
-                cout << "ID Etudiant : ";
-                cin >> idE;
-                cout << "Index de la note : ";
-                cin >> index;
-                Etudiant* e = DataManager::trouverEtudiant(idE);
-                if (e) supprimerNote(*e, index);
-                else cout << "Etudiant non trouve.\n";
-            } else if (choix == 4) {
-                cout << "\n--- LISTE DES ETUDIANTS ---\n";
-                for (auto* e : DataManager::etudiants)
-                    e->afficherInfos();
-            } else if (choix == 5) {
-                cout << "\n--- LISTE DES MATIERES ---\n";
-                for (const auto& m : DataManager::matieres)
-                    m.afficher();
+        choix = lireEntier();
+        if (!verifierChoix(choix, 1, 6)) continue;
+
+        if (choix == 1) {
+            int idE, idM;
+            float val;
+            string date;
+
+            cout << centrer("ID Etudiant : ");
+            idE = lireEntier();
+
+            cout << centrer("ID Matiere : ");
+            idM = lireEntier();
+
+            cout << centrer("Valeur de la note : ");
+            val = lireFloat();
+
+            cout << centrer("Date (JJ/MM/AAAA) : ");
+            getline(cin, date);
+
+            Etudiant* e = DataManager::trouverEtudiant(idE);
+            if (e) {
+                Note n(DataManager::nextNoteId++, val, date, idM);
+                ajouterNote(*e, n);
+                cout << centrer("Note ajoutee avec succes.") << "\n";
+            } else {
+                cout << centrer("Etudiant non trouve.") << "\n";
             }
-        } while (choix != 6);
-    }
+        }
+        else if (choix == 2) {
+            int idE, index;
+            float val;
+
+            cout << centrer("ID Etudiant : ");
+            idE = lireEntier();
+
+            cout << centrer("Index de la note : ");
+            index = lireEntier();
+
+            cout << centrer("Nouvelle valeur : ");
+            val = lireFloat();
+
+            Etudiant* e = DataManager::trouverEtudiant(idE);
+            if (e) {
+                modifierNote(*e, index, val);
+            } else {
+                cout << centrer("Etudiant non trouve.") << "\n";
+            }
+        }
+        else if (choix == 3) {
+            int idE, index;
+
+            cout << centrer("ID Etudiant : ");
+            idE = lireEntier();
+
+            cout << centrer("Index de la note : ");
+            index = lireEntier();
+
+            Etudiant* e = DataManager::trouverEtudiant(idE);
+            if (e) {
+                supprimerNote(*e, index);
+            } else {
+                cout << centrer("Etudiant non trouve.") << "\n";
+            }
+        }
+        else if (choix == 4) {
+            afficherTitreSection("LISTE DES ETUDIANTS");
+            for (auto* e : DataManager::etudiants)
+                e->afficherInfos();
+        }
+        else if (choix == 5) {
+            afficherTitreSection("LISTE DES MATIERES");
+            for (const auto& m : DataManager::matieres) {
+                stringstream ss;
+                ss << "Matiere [" << m.getId() << "] " << m.getNom() 
+                   << " (coef " << m.getCoefficient() << ") - " << m.getDescription();
+                cout << centrer(ss.str()) << "\n";
+            }
+        }
+
+    } while (choix != 6);
+}
+
 };
 
 class Infirmier : public Personne {
@@ -1216,51 +1427,67 @@ public:
         ofstream f("infirmerie.txt", ios::app);
         f << p.getId() << ";" << p.getNomComplet() << ";" << soin << ";" << __DATE__ << "\n";
         f.close();
-        cout << "Soin enregistre pour " << p.getNomComplet() << endl;
+        cout << centrer("Soin enregistre pour " + p.getNomComplet()) << "\n";
     }
 
     void consulterSoins() {
         ifstream f("infirmerie.txt");
         if (!f.is_open()) {
-            cout << "Aucun soin enregistre.\n";
+            cout << centrer("Aucun soin enregistre.") << "\n";
             return;
         }
-        cout << "\n--- LISTE DES SOINS ---\n";
+        afficherTitreSection("LISTE DES SOINS");
         string line;
         while (getline(f, line)) {
             if (line.empty()) continue;
-            cout << line << endl;
+            cout << centrer(line) << "\n";
         }
         f.close();
     }
 
     void menu() override {
-        int choix;
-        do {
-            cout << "\n===== MENU INFIRMIER =====\n";
-            cout << "1. Enregistrer un soin\n";
-            cout << "2. Consulter les soins\n";
-            cout << "3. Quitter\n";
-            cout << "Choix : ";
-            cin >> choix;
-            cin.ignore();
+    int choix;
+    do {
+        cout << "\n";
+        dessinerLigneHaut();
+        string titre = string(GRAS) + CYAN + "**** MENU INFIRMIER ****" + RESET;
+        cout << encadrerTexte(titre) << "\n";
+        dessinerLigneSep();
+        cout << encadrerTexte("1. Enregistrer un soin") << "\n";
+        cout << encadrerTexte("2. Consulter les soins") << "\n";
+        string quitter = string(ROUGE) + "3. Quitter" + RESET;
+        cout << encadrerTexte(quitter) << "\n";
+        dessinerLigneBas();
+        cout << centrer("Choix : ");
 
-            if (choix == 1) {
-                int idP;
-                string soin;
-                cout << "ID Personne : ";
-                cin >> idP;
-                cin.ignore();
-                cout << "Description du soin : ";
-                getline(cin, soin);
-                Personne* p = DataManager::trouverPersonne(idP);
-                if (p) enregistrerSoin(*p, soin);
-                else cout << "Personne non trouvee.\n";
-            } else if (choix == 2) {
-                consulterSoins();
+        choix = lireEntier();
+        if (!verifierChoix(choix, 1, 3)) continue;
+
+        if (choix == 1) {
+            int idP;
+            string soin;
+
+            cout << centrer("ID Personne : ");
+            idP = lireEntier();
+
+            cout << centrer("Description du soin : ");
+            getline(cin, soin);
+
+            Personne* p = DataManager::trouverPersonne(idP);
+            if (p) {
+                enregistrerSoin(*p, soin);
+                cout << centrer("Soin enregistre avec succes.") << "\n";
+            } else {
+                cout << centrer("Personne non trouvee.") << "\n";
             }
-        } while (choix != 3);
-    }
+        }
+        else if (choix == 2) {
+            consulterSoins();
+        }
+
+    } while (choix != 3);
+}
+
 };
 
 class AgentSecurite : public Personne {
@@ -1274,49 +1501,64 @@ public:
         ofstream f("securite.txt", ios::app);
         f << typeIncident << ";" << lieu << ";" << description << ";" << __DATE__ << "\n";
         f.close();
-        cout << "Incident de securite enregistre.\n";
+        cout << centrer("Incident de securite enregistre.") << "\n";
     }
 
     void consulterIncidents() {
         ifstream f("securite.txt");
         if (!f.is_open()) {
-            cout << "Aucun incident enregistre.\n";
+            cout << centrer("Aucun incident enregistre.") << "\n";
             return;
         }
-        cout << "\n--- LISTE DES INCIDENTS ---\n";
+        afficherTitreSection("LISTE DES INCIDENTS");
         string line;
         while (getline(f, line)) {
             if (line.empty()) continue;
-            cout << line << endl;
+            cout << centrer(line) << "\n";
         }
         f.close();
     }
 
     void menu() override {
-        int choix;
-        do {
-            cout << "\n===== MENU AGENT DE SECURITE =====\n";
-            cout << "1. Signaler un incident\n";
-            cout << "2. Consulter les incidents\n";
-            cout << "3. Quitter\n";
-            cout << "Choix : ";
-            cin >> choix;
-            cin.ignore();
+    int choix;
+    do {
+        cout << "\n";
+        dessinerLigneHaut();
+        string titre = string(GRAS) + CYAN + "**** MENU AGENT DE SECURITE ****" + RESET;
+        cout << encadrerTexte(titre) << "\n";
+        dessinerLigneSep();
+        cout << encadrerTexte("1. Signaler un incident") << "\n";
+        cout << encadrerTexte("2. Consulter les incidents") << "\n";
+        string quitter = string(ROUGE) + "3. Quitter" + RESET;
+        cout << encadrerTexte(quitter) << "\n";
+        dessinerLigneBas();
+        cout << centrer("Choix : ");
 
-            if (choix == 1) {
-                string type, lieu, desc;
-                cout << "Type d'incident : ";
-                getline(cin, type);
-                cout << "Lieu : ";
-                getline(cin, lieu);
-                cout << "Description : ";
-                getline(cin, desc);
-                signalerIncident(type, lieu, desc);
-            } else if (choix == 2) {
-                consulterIncidents();
-            }
-        } while (choix != 3);
-    }
+        choix = lireEntier();
+        if (!verifierChoix(choix, 1, 3)) continue;
+
+        if (choix == 1) {
+            string type, lieu, desc;
+
+            cout << centrer("Type d'incident : ");
+            getline(cin, type);
+
+            cout << centrer("Lieu : ");
+            getline(cin, lieu);
+
+            cout << centrer("Description : ");
+            getline(cin, desc);
+
+            signalerIncident(type, lieu, desc);
+            cout << centrer("Incident enregistre avec succes.") << "\n";
+        }
+        else if (choix == 2) {
+            consulterIncidents();
+        }
+
+    } while (choix != 3);
+}
+
 };
 
 // Implementations of DataManager methods (after all class definitions)
@@ -1471,14 +1713,14 @@ int lireEntier() {
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             return x;
         }
-        cout << "Entree invalide. Entrez un nombre : ";
+        cout << centrer("Entree invalide.") << "\n" << centrer("Entrez un nombre : ");
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 }
 bool verifierChoix(int choix, int min, int max) {
     if (choix < min || choix > max) {
-        cout << "Choix invalide. Reessayez.\n";
+        cout << centrer("Choix invalide. Reessayez.") << "\n";
         return false;
     }
     return true;
@@ -1491,104 +1733,161 @@ float lireFloat() {
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             return x;
         }
-        cout << " Entree invalide. Entrez un nombre decimal : ";
+        cout << centrer("Entree invalide. Entrez un nombre decimal : ");
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 }
+string centrer(const string& texte, int largeur ) {
+    int espaces = (largeur - texte.length()) / 2;
+    if (espaces > 0)
+        return string(espaces, ' ') + texte;
+    return texte;
+}
 
+void ligne() {
+    cout << GRAS << BLEU << centrer("*****************************************") << RESET << "\n";
+}
 
+void dessinerLigneHaut() {
+    cout << GRAS << BLEU;
+    int espaces = (60 - 44) / 2;
+    cout << string(espaces, ' ') << "+==========================================+" << string(espaces, ' ') << RESET << "\n";
+}
 
-// Main function with authentication and menu system
-int main() {
-    cout << "===== SYSTEME DE GESTION SCOLAIRE =====\n\n";
+void dessinerLigneBas() {
+    cout << GRAS << BLEU;
+    int espaces = (60 - 44) / 2;
+    cout << string(espaces, ' ') << "+==========================================+" << string(espaces, ' ') << RESET << "\n";
+}
+
+void dessinerLigneSep() {
+    cout << GRAS << BLEU;
+    int espaces = (60 - 44) / 2;
+    cout << string(espaces, ' ') << "+------------------------------------------+" << string(espaces, ' ') << RESET << "\n";
+}
+
+string encadrerTexte(const string& texte) {
+    int largeurCadre = 42;
+    int largeurTotale = 60;
     
-    // Initialize database files if they don't exist (create empty files)
+    // Extraire le texte sans les codes de couleur pour calculer la longueur réelle
+    string texteSansCouleur = texte;
+    size_t pos;
+    string codes[] = {"\033[0m", "\033[31m", "\033[32m", "\033[33m", "\033[34m", "\033[36m", "\033[1m"};
+    for (const auto& code : codes) {
+        while ((pos = texteSansCouleur.find(code)) != string::npos) {
+            texteSansCouleur.erase(pos, code.length());
+        }
+    }
+    
+    // Calculer les espaces pour centrer
+    int longueurTexte = texteSansCouleur.length();
+    int largeurDispo = largeurCadre - 4;
+    int espacesGaucheTotal = (largeurTotale - largeurCadre) / 2;
+    int espacesGaucheInterne = (largeurDispo - longueurTexte) / 2;
+    int espacesDroiteInterne = largeurDispo - longueurTexte - espacesGaucheInterne;
+    
+    string result = string(espacesGaucheTotal, ' ') + GRAS + BLEU + "|" + RESET + "  " + 
+                    string(espacesGaucheInterne, ' ') + texte + 
+                    string(espacesDroiteInterne, ' ') + "  " + GRAS + BLEU + "|" + RESET;
+    return result;
+}
+
+void afficherTitreSection(const string& titre) {
+    cout << "\n";
+    dessinerLigneHaut();
+    string titreFormate = string(GRAS) + JAUNE + "**** " + titre + " ****" + RESET;
+    cout << encadrerTexte(titreFormate) << "\n";
+    dessinerLigneBas();
+    cout << "\n";
+}
+
+
+
+
+int main() {
+    cout << GRAS << VERT << centrer("**** SYSTEME DE GESTION SCOLAIRE ****") << RESET "\n\n";
+
+    // Initialisation des fichiers
     vector<string> dbFiles = {
         "personnes.txt", "matieres.txt", "notes.txt", "salles.txt",
         "cours.txt", "paiements.txt", "bibliotheque.txt", "absence.txt",
         "maintenance.txt", "infirmerie.txt", "securite.txt", "nettoyage.txt"
     };
+
     for (const auto& filename : dbFiles) {
         ifstream check(filename);
         if (!check.is_open()) {
-            // File doesn't exist, create empty file
             ofstream create(filename);
             create.close();
-        } else {
-            check.close();
         }
     }
-    
-    // Load all data
+
     DataManager::chargerToutesLesDonnees();
-    
-    // Main menu
-   
 
-int choix;
-Personne* currentUser = nullptr;
+    int choix;
+    Personne* currentUser = nullptr;
 
-do {
-    cout << "\n===== MENU PRINCIPAL =====\n";
-    cout << "1. Login\n";
-    cout << "2. Quitter\n";
-    cout << "Choix : ";
+    do {
+        cout << "\n";
+        dessinerLigneHaut();
+        string titre = string(GRAS) + CYAN + "**** MENU PRINCIPAL ****" + RESET;
+        cout << encadrerTexte(titre) << "\n";
+        dessinerLigneSep();
+        cout << encadrerTexte("1. Login") << "\n";
+        string quitter = string(ROUGE) + "2. Quitter" + RESET;
+        cout << encadrerTexte(quitter) << "\n";
+        dessinerLigneBas();
+        cout << centrer("Choix : ");
 
-    choix = lireEntier();
-    if (!verifierChoix(choix, 1, 2)) continue;
+        choix = lireEntier();
+        if (!verifierChoix(choix, 1, 2)) continue;
 
-    if (choix == 1) {
+        if (choix == 1) {
+            int id;
+            cout << centrer("Entrez votre ID : ");
+            id = lireEntier();
 
-        int id;
-        cout << "Entrez votre ID : ";
-        id = lireEntier();
+            int tentatives = 0;
+            bool connecte = false;
 
-        int tentativesPwd = 0;
-        bool connecte = false;
+            while (tentatives < 5) {
+                string password;
+                cout << centrer("Entrez votre Mot de Passe : ");
+                getline(cin, password);
 
-        while (tentativesPwd < 5) {
-            string password;
-
-            cout << "Entrez votre Mot de Passe : ";
-            getline(cin, password);
-
-            try {
-                currentUser = DataManager::login(id, password);
-                cout << " Bienvenue " << currentUser->getNomComplet() << " !\n";
-                currentUser->menu();
-                connecte = true;
-                break;
+                try {
+                    currentUser = DataManager::login(id, password);
+                    cout << "\n"<< GRAS << VERT << centrer("Bienvenue " + currentUser->getNomComplet() + " !") << RESET << "\n";
+                    currentUser->menu();
+                    connecte = true;
+                    break;
+                }
+                catch (const runtime_error&) {
+                    tentatives++;
+                    cout << centrer("Mot de passe incorrect.") << "\n";
+                    cout << centrer("Tentative " + to_string(tentatives) + " / 5") << "\n\n";
+                }
             }
-            catch (const runtime_error&) {
-                tentativesPwd++;
-                cout << " Mot de passe incorrect.\n";
-                cout << "Tentative " << tentativesPwd << " / 5\n\n";
+
+            if (!connecte) {
+                cout << centrer("Trop de tentatives incorrectes.") << "\n";
+                cout << centrer("Retour au menu principal...") << "\n";
             }
         }
 
-        if (!connecte) {
-            cout << "Trop de tentatives incorrectes.\n";
-            cout << "Retour au menu principal...\n";
-        }
-    }
+    } while (choix != 2);
 
-} while (choix != 2);
-
-
-
-
-
-    // Save all data before exit
     DataManager::sauvegarderToutesLesDonnees();
-    cout << "Donnees sauvegardees. Au revoir!\n";
-    
-    // Cleanup
+    cout << "\n" << centrer("Donnees sauvegardees. Au revoir!") << "\n";
+
     for (auto* p : DataManager::personnes)
         delete p;
-    
+
     return 0;
 }
+
 
 
 //compile in vs code by ameur
