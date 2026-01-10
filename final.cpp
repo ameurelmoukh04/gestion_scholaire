@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <limits>
+#include <map>
 
 
 using namespace std;
@@ -457,6 +458,7 @@ public:
     static int nextCoursId;
     static int nextNoteId;
     static int nextPaiementId;
+    static map<int, int> tentativesEchouees; // ID -> nombre de tentatives échouées
 
     static void chargerToutesLesDonnees() {
         chargerMatieres();
@@ -572,12 +574,38 @@ public:
         return nullptr;
     }
 
+    static bool estBloque(int id) {
+        return tentativesEchouees.find(id) != tentativesEchouees.end() && 
+               tentativesEchouees[id] >= 5;
+    }
+    
+    static void enregistrerTentativeEchouee(int id) {
+        if (tentativesEchouees.find(id) == tentativesEchouees.end()) {
+            tentativesEchouees[id] = 1;
+        } else {
+            tentativesEchouees[id]++;
+        }
+    }
+    
+    static void reinitialiserTentatives(int id) {
+        tentativesEchouees.erase(id);
+    }
+    
     static Personne* login(int id, string password){
+        // Vérifier si l'ID est bloqué
+        if (estBloque(id)) {
+            throw runtime_error("Compte bloque apres 5 tentatives echouees");
+        }
+        
         for (auto* p : personnes) {
             if (p->getId() == id) {
                 if (p->getPassword() == password) {
+                    // Réinitialiser les tentatives en cas de succès
+                    reinitialiserTentatives(id);
                     return p;
                 } else {
+                    // Enregistrer la tentative échouée
+                    enregistrerTentativeEchouee(id);
                     throw runtime_error("Mot de Pass est Incorrect");
                 }
             }
@@ -612,6 +640,7 @@ int DataManager::nextSalleId = 1;
 int DataManager::nextCoursId = 1;
 int DataManager::nextNoteId = 1;
 int DataManager::nextPaiementId = 1;
+map<int, int> DataManager::tentativesEchouees;
 
 class Etudiant : public Personne {
 private:
@@ -1849,10 +1878,20 @@ int main() {
             cout << centrer("Entrez votre ID : ");
             id = lireEntier();
 
+            // Vérifier si le compte est déjà bloqué
+            if (DataManager::estBloque(id)) {
+                cout << "\n";
+                afficherTitreSection("COMPTE BLOQUE");
+                cout << centrer("Ce compte est bloque apres 5 tentatives echouees.") << "\n";
+                cout << centrer("Veuillez contacter l'administrateur.") << "\n";
+                continue;
+            }
+
             int tentatives = 0;
             bool connecte = false;
+            int tentativesRestantes = 5;
 
-            while (tentatives < 5) {
+            while (tentatives < 5 && !DataManager::estBloque(id)) {
                 string password;
                 cout << centrer("Entrez votre Mot de Passe : ");
                 getline(cin, password);
@@ -1864,14 +1903,29 @@ int main() {
                     connecte = true;
                     break;
                 }
-                catch (const runtime_error&) {
-                    tentatives++;
-                    cout << centrer("Mot de passe incorrect.") << "\n";
-                    cout << centrer("Tentative " + to_string(tentatives) + " / 5") << "\n\n";
+                catch (const runtime_error& e) {
+                    string erreur = e.what();
+                    if (erreur == "Compte bloque apres 5 tentatives echouees") {
+                        cout << "\n";
+                        afficherTitreSection("COMPTE BLOQUE");
+                        cout << centrer("Trop de tentatives incorrectes.") << "\n";
+                        cout << centrer("Ce compte est maintenant bloque.") << "\n";
+                        cout << centrer("Veuillez contacter l'administrateur.") << "\n";
+                        break;
+                    } else {
+                        tentatives++;
+                        tentativesRestantes = 5 - tentatives;
+                        cout << centrer("Mot de passe incorrect.") << "\n";
+                        cout << centrer("Tentative " + to_string(tentatives) + " / 5") << "\n";
+                        if (tentativesRestantes > 0) {
+                            cout << centrer("Tentatives restantes : " + to_string(tentativesRestantes)) << "\n";
+                        }
+                        cout << "\n";
+                    }
                 }
             }
 
-            if (!connecte) {
+            if (!connecte && !DataManager::estBloque(id)) {
                 cout << centrer("Trop de tentatives incorrectes.") << "\n";
                 cout << centrer("Retour au menu principal...") << "\n";
             }
