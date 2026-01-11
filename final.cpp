@@ -127,19 +127,72 @@ public:
     }
 
     virtual void fromFileString(const string& line) {
+        // Ignorer les lignes de conflit Git
+        if (line.find("<<<<<<<") != string::npos || 
+            line.find("=======") != string::npos || 
+            line.find(">>>>>>>") != string::npos) {
+            return;
+        }
+        
         stringstream ss(line);
         string item;
-        getline(ss, item, ';'); id = stoi(item);
+        
+        // Lire id
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    id = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
         getline(ss, prenom, ';');
         getline(ss, nom, ';');
         getline(ss, dateNaissance, ';');
         getline(ss, email, ';');
-        getline(ss, password, ';');
-        getline(ss, telephone, ';');
-        getline(ss, adresse, ';');
-        getline(ss, item, ';'); actif = (item == "1");
-        getline(ss, item, ';'); absence = stoi(item);
-        getline(ss, item, ';'); retard = stoi(item);
+        
+        // Format du fichier : id;prenom;nom;date;email;password;telephone;adresse;actif;absence;retard
+        // Lire le mot de passe (toujours présent dans le nouveau format)
+        string nextField;
+        if (getline(ss, nextField, ';')) {
+            password = nextField;
+            // Lire le téléphone
+            if (getline(ss, telephone, ';')) {
+                // Téléphone lu
+            } else {
+                telephone = "";
+            }
+        }
+        
+        if (getline(ss, adresse, ';')) {
+            // Adresse lue
+        } else {
+            adresse = "";
+        }
+        
+        if (getline(ss, item, ';')) {
+            if (!item.empty()) actif = (item == "1" || item == "true");
+        }
+        
+        if (getline(ss, item, ';')) {
+            if (!item.empty()) {
+                try {
+                    if (item.find_first_not_of("0123456789") == string::npos) {
+                        absence = stoi(item);
+                    }
+                } catch (...) {}
+            }
+        }
+        
+        if (getline(ss, item, ';')) {
+            if (!item.empty()) {
+                try {
+                    if (item.find_first_not_of("0123456789") == string::npos) {
+                        retard = stoi(item);
+                    }
+                } catch (...) {}
+            }
+        }
     }
 
     virtual void menu() = 0;
@@ -179,11 +232,34 @@ public:
     }
 
     void fromFileString(const string& line) {
+        // Ignorer les lignes de conflit Git
+        if (line.find("<<<<<<<") != string::npos || 
+            line.find("=======") != string::npos || 
+            line.find(">>>>>>>") != string::npos) {
+            return;
+        }
+        
         stringstream ss(line);
         string item;
-        getline(ss, item, ';'); id = stoi(item);
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    id = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
         getline(ss, nom, ';');
-        getline(ss, item, ';'); coefficient = stoi(item);
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    coefficient = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
         getline(ss, description, ';');
     }
 
@@ -227,12 +303,46 @@ public:
     }
 
     void fromFileString(const string& line, int& idEtudiant) {
+        // Ignorer les lignes de conflit Git
+        if (line.find("<<<<<<<") != string::npos || 
+            line.find("=======") != string::npos || 
+            line.find(">>>>>>>") != string::npos) {
+            return;
+        }
+        
         stringstream ss(line);
         string item;
-        getline(ss, item, ';'); id = stoi(item);
-        getline(ss, item, ';'); idEtudiant = stoi(item);
-        getline(ss, item, ';'); idMatiere = stoi(item);
-        getline(ss, item, ';'); valeur = stof(item);
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    id = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    idEtudiant = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    idMatiere = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                valeur = stof(item);
+            } catch (...) {}
+        }
+        
         getline(ss, date, ';');
     }
 
@@ -284,13 +394,45 @@ public:
     }
 
     void fromFileString(const string& line) {
+        // Ignorer les lignes de conflit Git
+        if (line.find("<<<<<<<") != string::npos || 
+            line.find("=======") != string::npos || 
+            line.find(">>>>>>>") != string::npos) {
+            return;
+        }
+        
         stringstream ss(line);
         string item;
-        getline(ss, item, ';'); id = stoi(item);
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    id = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
         getline(ss, numero, ';');
-        getline(ss, item, ';'); capacite = stoi(item);
-        getline(ss, item, ';'); etage = stoi(item);
-        getline(ss, item, ';'); disponible = (item == "1");
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    capacite = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    etage = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
+        if (getline(ss, item, ';')) {
+            disponible = (item == "1" || item == "true");
+        }
     }
 
     void sauvegarder() const {
@@ -340,10 +482,26 @@ public:
     }
 
     void fromFileString(const string& line) {
+        // Ignorer les lignes de conflit Git
+        if (line.find("<<<<<<<") != string::npos || 
+            line.find("=======") != string::npos || 
+            line.find(">>>>>>>") != string::npos) {
+            return;
+        }
+        
         stringstream ss(line);
         string item;
-        getline(ss, item, ';'); id = stoi(item);
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    id = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
         getline(ss, nom, ';');
+        
         if (ss.peek() != EOF) {
             string etudiants;
             getline(ss, etudiants, ';');
@@ -351,8 +509,13 @@ public:
                 stringstream ss2(etudiants);
                 string idE;
                 while (getline(ss2, idE, ',')) {
-                    if (!idE.empty())
-                        idEtudiants.push_back(stoi(idE));
+                    if (!idE.empty()) {
+                        try {
+                            if (idE.find_first_not_of("0123456789") == string::npos) {
+                                idEtudiants.push_back(stoi(idE));
+                            }
+                        } catch (...) {}
+                    }
                 }
             }
         }
@@ -412,24 +575,71 @@ public:
     }
 
     void fromFileString(const string& line) {
+        // Ignorer les lignes de conflit Git
+        if (line.find("<<<<<<<") != string::npos || 
+            line.find("=======") != string::npos || 
+            line.find(">>>>>>>") != string::npos) {
+            return;
+        }
+        
         stringstream ss(line);
         string item;
-        getline(ss, item, ';'); id = stoi(item);
-        getline(ss, item, ';'); idMatiere = stoi(item);
-        getline(ss, item, ';'); idSalle = stoi(item);
+        
+        // Lire id
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    id = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
+        // Lire idMatiere
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    idMatiere = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
+        // Lire idSalle
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    idSalle = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
         getline(ss, jour, ';');
         getline(ss, heureDebut, ';');
         getline(ss, heureFin, ';');
+        
+        // Gérer l'ancien format (avec idEtudiant) et le nouveau format (avec idEnseignant et idGroupe)
+        idEnseignant = 0;
+        idGroupe = 0;
+        
         if (ss.peek() != EOF) {
-            getline(ss, item, ';'); idEnseignant = stoi(item);
-            if (ss.peek() != EOF) {
-                getline(ss, item, ';'); idGroupe = stoi(item);
-            } else {
-                idGroupe = 0; // Pour compatibilité avec anciens fichiers
+            if (getline(ss, item, ';') && !item.empty()) {
+                try {
+                    // Vérifier si c'est un nombre
+                    if (item.find_first_not_of("0123456789") == string::npos) {
+                        int testId = stoi(item);
+                        // Si le champ suivant existe, c'est le nouveau format (idEnseignant puis idGroupe)
+                        if (ss.peek() != EOF) {
+                            idEnseignant = testId;
+                            if (getline(ss, item, ';') && !item.empty() && 
+                                item.find_first_not_of("0123456789") == string::npos) {
+                                idGroupe = stoi(item);
+                            }
+                        }
+                        // Sinon, c'est l'ancien format avec idEtudiant, on l'ignore
+                    }
+                } catch (...) {
+                    // Ignorer les erreurs de conversion
+                }
             }
-        } else {
-            idEnseignant = 0;
-            idGroupe = 0;
         }
     }
 
@@ -506,11 +716,38 @@ public:
     }
 
     void fromFileString(const string& line) {
+        // Ignorer les lignes de conflit Git
+        if (line.find("<<<<<<<") != string::npos || 
+            line.find("=======") != string::npos || 
+            line.find(">>>>>>>") != string::npos) {
+            return;
+        }
+        
         stringstream ss(line);
         string item;
-        getline(ss, item, ';'); id = stoi(item);
-        getline(ss, item, ';'); idEtudiant = stoi(item);
-        getline(ss, item, ';'); montant = stof(item);
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    id = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                if (item.find_first_not_of("0123456789") == string::npos) {
+                    idEtudiant = stoi(item);
+                }
+            } catch (...) {}
+        }
+        
+        if (getline(ss, item, ';') && !item.empty()) {
+            try {
+                montant = stof(item);
+            } catch (...) {}
+        }
+        
         getline(ss, date, ';');
         getline(ss, type, ';');
     }
