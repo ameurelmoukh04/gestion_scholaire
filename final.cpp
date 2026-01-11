@@ -300,6 +300,71 @@ public:
     }
 };
 
+class Groupe {
+    int id;
+    string nom;
+    vector<int> idEtudiants;
+
+public:
+    Groupe(int i=0, string n="") : id(i), nom(n) {}
+
+    int getId() const { return id; }
+    string getNom() const { return nom; }
+    vector<int>& getIdEtudiants() { return idEtudiants; }
+    const vector<int>& getIdEtudiants() const { return idEtudiants; }
+
+    void ajouterEtudiant(int idE) {
+        idEtudiants.push_back(idE);
+    }
+
+    void supprimerEtudiant(int idE) {
+        idEtudiants.erase(
+            remove(idEtudiants.begin(), idEtudiants.end(), idE),
+            idEtudiants.end()
+        );
+    }
+
+    void afficher() const {
+        cout << centrer("Groupe [" + to_string(id) + "] " + nom) << "\n";
+        cout << centrer("Nombre d'etudiants : " + to_string(idEtudiants.size())) << "\n";
+    }
+
+    string toFileString() const {
+        stringstream ss;
+        ss << id << ";" << nom << ";";
+        for (size_t i = 0; i < idEtudiants.size(); i++) {
+            if (i > 0) ss << ",";
+            ss << idEtudiants[i];
+        }
+        return ss.str();
+    }
+
+    void fromFileString(const string& line) {
+        stringstream ss(line);
+        string item;
+        getline(ss, item, ';'); id = stoi(item);
+        getline(ss, nom, ';');
+        if (ss.peek() != EOF) {
+            string etudiants;
+            getline(ss, etudiants, ';');
+            if (!etudiants.empty()) {
+                stringstream ss2(etudiants);
+                string idE;
+                while (getline(ss2, idE, ',')) {
+                    if (!idE.empty())
+                        idEtudiants.push_back(stoi(idE));
+                }
+            }
+        }
+    }
+
+    void sauvegarder() const {
+        ofstream f("groupes.txt", ios::app);
+        f << toFileString() << "\n";
+        f.close();
+    }
+};
+
 class Cours {
     int id;
     int idMatiere;
@@ -307,11 +372,12 @@ class Cours {
     string jour;
     string heureDebut;
     string heureFin;
-    int idEtudiant;
+    int idEnseignant;
+    int idGroupe; // 0 si pas de groupe
 
 public:
-    Cours(int i=0, int idM=0, int idS=0, string j="", string hd="", string hf="", int idE=0)
-        : id(i), idMatiere(idM), idSalle(idS), jour(j), heureDebut(hd), heureFin(hf), idEtudiant(idE) {}
+    Cours(int i=0, int idM=0, int idS=0, string j="", string hd="", string hf="", int idEns=0, int idG=0)
+        : id(i), idMatiere(idM), idSalle(idS), jour(j), heureDebut(hd), heureFin(hf), idEnseignant(idEns), idGroupe(idG) {}
 
     int getId() const { return id; }
     int getIdMatiere() const { return idMatiere; }
@@ -319,7 +385,8 @@ public:
     string getJour() const { return jour; }
     string getHeureDebut() const { return heureDebut; }
     string getHeureFin() const { return heureFin; }
-    int getIdEtudiant() const { return idEtudiant; }
+    int getIdEnseignant() const { return idEnseignant; }
+    int getIdGroupe() const { return idGroupe; }
 
     void modifierHoraire(string hd, string hf) {
         heureDebut = hd;
@@ -327,16 +394,20 @@ public:
     }
 
     void afficher() const {
-        cout << "Cours [" << id << "] "
-             << jour << " " << heureDebut << "-" << heureFin
-             << " | Matiere ID: " << idMatiere
-             << " | Salle ID: " << idSalle << endl;
+        stringstream ss;
+        ss << "Cours [" << id << "] " << jour << " " << heureDebut << "-" << heureFin
+           << " | Matiere ID: " << idMatiere << " | Salle ID: " << idSalle
+           << " | Enseignant ID: " << idEnseignant;
+        if (idGroupe > 0) {
+            ss << " | Groupe ID: " << idGroupe;
+        }
+        cout << centrer(ss.str()) << "\n";
     }
 
     string toFileString() const {
         stringstream ss;
         ss << id << ";" << idMatiere << ";" << idSalle << ";"
-           << jour << ";" << heureDebut << ";" << heureFin << ";" << idEtudiant;
+           << jour << ";" << heureDebut << ";" << heureFin << ";" << idEnseignant << ";" << idGroupe;
         return ss.str();
     }
 
@@ -350,7 +421,15 @@ public:
         getline(ss, heureDebut, ';');
         getline(ss, heureFin, ';');
         if (ss.peek() != EOF) {
-            getline(ss, item, ';'); idEtudiant = stoi(item);
+            getline(ss, item, ';'); idEnseignant = stoi(item);
+            if (ss.peek() != EOF) {
+                getline(ss, item, ';'); idGroupe = stoi(item);
+            } else {
+                idGroupe = 0; // Pour compatibilité avec anciens fichiers
+            }
+        } else {
+            idEnseignant = 0;
+            idGroupe = 0;
         }
     }
 
@@ -453,19 +532,22 @@ public:
     static vector<Etudiant*> etudiants;
     static vector<Note> notes;
     static vector<Paiement> paiements;
+    static vector<Groupe> groupes;
     static int nextPersonneId;
     static int nextMatiereId;
     static int nextSalleId;
     static int nextCoursId;
     static int nextNoteId;
     static int nextPaiementId;
+    static int nextGroupeId;
     static map<int, int> tentativesEchouees; // ID -> nombre de tentatives échouées
 
     static void chargerToutesLesDonnees() {
         chargerMatieres();
         chargerSalles();
-        chargerCours();
+        chargerGroupes();
         chargerPersonnes();
+        chargerCours();
         chargerNotes();
         chargerPaiements();
     }
@@ -473,6 +555,7 @@ public:
     static void sauvegarderToutesLesDonnees() {
         sauvegarderMatieres();
         sauvegarderSalles();
+        sauvegarderGroupes();
         sauvegarderCours();
         sauvegarderPersonnes();
         sauvegarderNotes();
@@ -625,6 +708,17 @@ public:
             if (s.getId() == id) return &s;
         return nullptr;
     }
+
+    static Enseignant* trouverEnseignant(int id); // Implementation after Enseignant class definition
+
+    static Groupe* trouverGroupe(int id) {
+        for (auto& g : groupes)
+            if (g.getId() == id) return &g;
+        return nullptr;
+    }
+
+    static void chargerGroupes();
+    static void sauvegarderGroupes();
 };
 
 // Static member definitions
@@ -641,6 +735,8 @@ int DataManager::nextSalleId = 1;
 int DataManager::nextCoursId = 1;
 int DataManager::nextNoteId = 1;
 int DataManager::nextPaiementId = 1;
+int DataManager::nextGroupeId = 1;
+vector<Groupe> DataManager::groupes;
 map<int, int> DataManager::tentativesEchouees;
 
 class Etudiant : public Personne {
@@ -995,10 +1091,21 @@ public:
 
     string getType() const override { return "DirecteurPedagogique"; }
 
-    void planifierCours(Etudiant& e, const Cours& c) {
-        e.ajouterCours(c);
+    void planifierCours(Enseignant& ens, const Cours& c) {
         c.sauvegarder();
         DataManager::cours.push_back(c);
+        // Si le cours a un groupe, ajouter le cours aux étudiants du groupe
+        if (c.getIdGroupe() > 0) {
+            Groupe* g = DataManager::trouverGroupe(c.getIdGroupe());
+            if (g) {
+                for (int idE : g->getIdEtudiants()) {
+                    Etudiant* e = DataManager::trouverEtudiant(idE);
+                    if (e) {
+                        e->ajouterCours(c);
+                    }
+                }
+            }
+        }
         cout << centrer("Cours planifie avec succes.") << "\n";
     }
 
@@ -1014,20 +1121,23 @@ public:
         cout << encadrerTexte("2. Consulter les cours") << "\n";
         cout << encadrerTexte("3. Consulter les matieres") << "\n";
         cout << encadrerTexte("4. Consulter les salles") << "\n";
-        string quitter = string(ROUGE) + "5. Quitter" + RESET;
+        cout << encadrerTexte("5. Creer un groupe") << "\n";
+        cout << encadrerTexte("6. Ajouter un etudiant a un groupe") << "\n";
+        cout << encadrerTexte("7. Consulter les groupes") << "\n";
+        string quitter = string(ROUGE) + "8. Quitter" + RESET;
         cout << encadrerTexte(quitter) << "\n";
         dessinerLigneBas();
         cout << centrer("Choix : ");
 
         choix = lireEntier();
-        if (!verifierChoix(choix, 1, 5)) continue;
+        if (!verifierChoix(choix, 1, 8)) continue;
 
         if (choix == 1) {
-            int idE, idM, idS;
+            int idEns, idM, idS, idG;
             string jour, hd, hf;
 
-            cout << centrer("ID Etudiant : ");
-            idE = lireEntier();
+            cout << centrer("ID Enseignant : ");
+            idEns = lireEntier();
 
             cout << centrer("ID Matiere : ");
             idM = lireEntier();
@@ -1044,24 +1154,28 @@ public:
             cout << centrer("Heure fin : ");
             getline(cin, hf);
 
-            Etudiant* e = DataManager::trouverEtudiant(idE);
-            if (e) {
-                Cours c(DataManager::nextCoursId++, idM, idS, jour, hd, hf, idE);
-                planifierCours(*e, c);
-                cout << centrer("Cours planifie avec succes.") << "\n";
+            cout << centrer("ID Groupe (0 si aucun groupe) : ");
+            idG = lireEntier();
+
+            Enseignant* ens = DataManager::trouverEnseignant(idEns);
+            if (ens) {
+                if (idG > 0) {
+                    Groupe* g = DataManager::trouverGroupe(idG);
+                    if (!g) {
+                        cout << centrer("Groupe non trouve.") << "\n";
+                        continue;
+                    }
+                }
+                Cours c(DataManager::nextCoursId++, idM, idS, jour, hd, hf, idEns, idG);
+                planifierCours(*ens, c);
             } else {
-                cout << centrer("Etudiant non trouve.") << "\n";
+                cout << centrer("Enseignant non trouve.") << "\n";
             }
         }
         else if (choix == 2) {
             afficherTitreSection("LISTE DES COURS");
             for (const auto& c : DataManager::cours) {
-                stringstream ss;
-                ss << "Cours [" << c.getId() << "] " << c.getJour() << " " 
-                   << c.getHeureDebut() << "-" << c.getHeureFin()
-                   << " | Matiere ID: " << c.getIdMatiere()
-                   << " | Salle ID: " << c.getIdSalle();
-                cout << centrer(ss.str()) << "\n";
+                c.afficher();
             }
         }
         else if (choix == 3) {
@@ -1083,8 +1197,77 @@ public:
                 cout << centrer(ss.str()) << "\n";
             }
         }
+        else if (choix == 5) {
+            string nom;
+            cout << centrer("Nom du groupe : ");
+            getline(cin, nom);
+            
+            if (!nom.empty()) {
+                Groupe g(DataManager::nextGroupeId++, nom);
+                DataManager::groupes.push_back(g);
+                g.sauvegarder();
+                DataManager::sauvegarderGroupes();
+                cout << centrer("Groupe cree avec succes. ID: " + to_string(g.getId())) << "\n";
+            } else {
+                cout << centrer("Le nom du groupe ne peut pas etre vide.") << "\n";
+            }
+        }
+        else if (choix == 6) {
+            int idG, idE;
+            cout << centrer("ID Groupe : ");
+            idG = lireEntier();
+            
+            cout << centrer("ID Etudiant : ");
+            idE = lireEntier();
+            
+            Groupe* g = DataManager::trouverGroupe(idG);
+            if (g) {
+                Etudiant* e = DataManager::trouverEtudiant(idE);
+                if (e) {
+                    // Vérifier si l'étudiant n'est pas déjà dans le groupe
+                    bool dejaDansGroupe = false;
+                    for (int id : g->getIdEtudiants()) {
+                        if (id == idE) {
+                            dejaDansGroupe = true;
+                            break;
+                        }
+                    }
+                    if (!dejaDansGroupe) {
+                        g->ajouterEtudiant(idE);
+                        DataManager::sauvegarderGroupes();
+                        cout << centrer("Etudiant ajoute au groupe avec succes.") << "\n";
+                    } else {
+                        cout << centrer("Cet etudiant est deja dans le groupe.") << "\n";
+                    }
+                } else {
+                    cout << centrer("Etudiant non trouve.") << "\n";
+                }
+            } else {
+                cout << centrer("Groupe non trouve.") << "\n";
+            }
+        }
+        else if (choix == 7) {
+            afficherTitreSection("LISTE DES GROUPES");
+            if (DataManager::groupes.empty()) {
+                cout << centrer("Aucun groupe cree.") << "\n";
+            } else {
+                for (const auto& g : DataManager::groupes) {
+                    g.afficher();
+                    if (!g.getIdEtudiants().empty()) {
+                        cout << centrer("Etudiants : ") << "\n";
+                        for (int idE : g.getIdEtudiants()) {
+                            Etudiant* e = DataManager::trouverEtudiant(idE);
+                            if (e) {
+                                cout << centrer("  - [" + to_string(idE) + "] " + e->getNomComplet()) << "\n";
+                            }
+                        }
+                    }
+                    cout << "\n";
+                }
+            }
+        }
 
-    } while (choix != 5);
+    } while (choix != 8);
 }
 
 
@@ -1452,6 +1635,16 @@ public:
 
 };
 
+// Implementation of DataManager::trouverEnseignant (after Enseignant class definition)
+Enseignant* DataManager::trouverEnseignant(int id) {
+    for (auto* p : personnes) {
+        if (p->getId() == id && p->getType() == "Enseignant") {
+            return dynamic_cast<Enseignant*>(p);
+        }
+    }
+    return nullptr;
+}
+
 class Infirmier : public Personne {
 public:
     Infirmier(int id, string prenom, string nom, string dateNaissance, string email)
@@ -1644,14 +1837,44 @@ void DataManager::chargerPaiements() {
     f.close();
 }
 
+void DataManager::chargerGroupes() {
+    ifstream f("groupes.txt");
+    if (!f.is_open()) return;
+    groupes.clear();
+    string line;
+    while (getline(f, line)) {
+        if (line.empty()) continue;
+        Groupe g;
+        g.fromFileString(line);
+        groupes.push_back(g);
+        if (g.getId() >= nextGroupeId) nextGroupeId = g.getId() + 1;
+    }
+    f.close();
+}
+
+void DataManager::sauvegarderGroupes() {
+    ofstream f("groupes.txt");
+    for (const auto& g : groupes)
+        f << g.toFileString() << "\n";
+    f.close();
+}
+
 void DataManager::chargerRelationsEtudiants() {
     // Load student relations (matieres, notes, cours, paiements)
     for (auto* e : etudiants) {
         // Load matieres for student (simplified - would need separate file)
-        // Load cours for student
+        // Load cours for student via groupes
         for (const auto& c : cours) {
-            if (c.getIdEtudiant() == e->getId()) {
-                e->ajouterCours(c);
+            if (c.getIdGroupe() > 0) {
+                Groupe* g = trouverGroupe(c.getIdGroupe());
+                if (g) {
+                    for (int idE : g->getIdEtudiants()) {
+                        if (idE == e->getId()) {
+                            e->ajouterCours(c);
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
@@ -1851,7 +2074,7 @@ int main() {
     vector<string> dbFiles = {
         "personnes.txt", "matieres.txt", "notes.txt", "salles.txt",
         "cours.txt", "paiements.txt", "bibliotheque.txt", "absence.txt",
-        "maintenance.txt", "infirmerie.txt", "securite.txt", "nettoyage.txt"
+        "maintenance.txt", "infirmerie.txt", "securite.txt", "nettoyage.txt", "groupes.txt"
     };
 
     for (const auto& filename : dbFiles) {
