@@ -1,7 +1,7 @@
-Etudiant;1;Ahmed;Benali;15/03/2005;ahmed.benali@school.ma;1234;1;0;1;1;1
+Etudiant;1;Ahmed;Benali;15/03/2005;ahmed.benali@school.ma;1234;0;1;0;1;1
 Etudiant;2;Fatima;Alaoui;22/07/2005;fatima.alaoui@school.ma;1234;0;0;0;0;0
-Etudiant;3;Youssef;Idrissi;10/11/2004;youssef.idrissi@school.ma;1234;1;0;0;3;3
-Etudiant;4;Aicha;Tazi;05/01/2005;aicha.tazi@school.ma;1234;0;1;1;1;1
+Etudiant;3;Youssef;Idrissi;10/11/2004;youssef.idrissi@school.ma;1234;0;0;0;3;3
+Etudiant;4;Aicha;Tazi;05/01/2005;aicha.tazi@school.ma;1234;1;1;1;1;1
 Etudiant;5;Mehdi;Berrada;18/09/2004;mehdi.berrada@school.ma;1234;0;0;0;0;0
 Enseignant;6;Dr. Hassan;Amrani;20/05/1975;hassan.amrani@school.ma;1234;0;0;0;0;0
 Enseignant;7;Prof. Khadija;Bennani;12/08/1980;khadija.bennani@school.ma;1234;0;0;0;0;0
@@ -14,4 +14,4 @@ Infirmier;13;Nadia;Rachidi;14/07/1983;nadia.rachidi@school.ma;1234;0;0;0;0;0
 AgentSecurite;14;Hamid;Touil;19/11/1976;hamid.touil@school.ma;1234;0;0;0;0;0
 Technicien;15;Karim;Bensaid;07/03/1981;karim.bensaid@school.ma;1234;0;0;0;0;0
 ResponsableSite;16;Larbi;El Ouazzani;22/05/1974;larbi.elouazzani@school.ma;1234;0;0;0;0;0
-PersonnelMenage;Zone A;17;Fatima;Ait Ali;10/12/1987;fatima.aitali@school.ma;1234;0688901234;77 Avenue Allal Ben Abdellah, Rabat;1;0;0
+PersonnelMenage;Zone A;17;Fatima;Ait Ali;10/12/1987;fatima.aitali@school.ma;1234;0688901234;0;1;0;0

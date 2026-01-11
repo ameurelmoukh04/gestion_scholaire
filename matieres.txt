@@ -1,4 +1,4 @@
-1;Mathematiques;4;Cours de mathematiques avancees incluant algebre, geometrie et analyse
+1;Mathematiques;99;Cours de mathematiques avancees incluant algebre, geometrie et analyse
 2;Physique;3;Cours de physique generale couvrant mecanique, thermodynamique et electromagnetisme
 3;Chimie;3;Cours de chimie generale et organique
 4;Francais;2;Cours de langue francaise et litterature

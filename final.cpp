@@ -89,6 +89,7 @@ public:
 
     // Setters
     void setEmail(const string& email) { this->email = email; }
+    void setPassword(const string& password) { this->password = password; }
     void setTelephone(const string& telephone) { this->telephone = telephone; }
     void setAdresse(const string& adresse) { this->adresse = adresse; }
     void setActif(bool statut) { actif = statut; }
@@ -120,7 +121,7 @@ public:
     virtual string toFileString() const {
         stringstream ss;
         ss << id << ";" << prenom << ";" << nom << ";" << dateNaissance
-           << ";" << email << ";" << telephone << ";" << adresse
+           << ";" << email << ";" << password << ";" << telephone << ";" << adresse
            << ";" << actif << ";" << absence << ";" << retard;
         return ss.str();
     }
@@ -873,7 +874,7 @@ public:
 
     string getType() const override { return "Caissiere"; }
 
-    void encaisserPaiement(Etudiant& e, float montant, const string& type = "Frais") {
+    void encaisserPaiement(Etudiant& e, float montant, const string& type = "Frais De Scolarite") {
         string date;
         cout << centrer("Date (JJ/MM/AAAA) : ");
         cin >> date;
@@ -1253,6 +1254,12 @@ public:
         }
         f.close();
     }
+
+    void affecterMatiere(Matiere* m, Etudiant& e){
+        e.ajouterMatiere(*m);
+    }
+    
+    
 
 private:
     void enregistrerAction(const string& type, int idPersonne) {
@@ -1708,17 +1715,19 @@ void DataManager::chargerPersonnes() {
             getline(ss2, zone, ';');
             string item;
             getline(ss2, item, ';'); int id = stoi(item);
-            string prenom, nom, date, email, tel, adr;
+            string prenom, nom, date, email, password, tel, adr;
             getline(ss2, prenom, ';');
             getline(ss2, nom, ';');
             getline(ss2, date, ';');
             getline(ss2, email, ';');
+            getline(ss2, password, ';');
             getline(ss2, tel, ';');
             getline(ss2, adr, ';');
             getline(ss2, item, ';'); bool ac = (item == "1");
             getline(ss2, item, ';'); int a = stoi(item);
             getline(ss2, item, ';'); int r = stoi(item);
             PersonnelMenage* pm = new PersonnelMenage(id, prenom, nom, date, email, zone);
+            pm->setPassword(password);
             pm->setTelephone(tel);
             pm->setAdresse(adr);
             pm->setActif(ac);

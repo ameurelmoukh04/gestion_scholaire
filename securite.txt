@@ -3,3 +3,4 @@ Altercation;Cour de recreation;Dispute entre deux etudiants resolue rapidement;1
 Objet suspect;Parking;Sac abandonne - verification effectuee - sans danger;18/10/2024
 Acces non autorise;Batiment B;Visiteur sans badge d'acces;25/10/2024
 
+conflit;1er etage;pas de description;Dec 27 2025
